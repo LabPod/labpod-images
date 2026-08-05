@@ -1,3 +1,4 @@
+import json
 import re
 import subprocess
 import unittest
@@ -6,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW = ROOT / ".github" / "workflows" / "images.yml"
+MATRIX = ROOT / ".github" / "image-matrix.json"
 EXPECTED_VARIANTS = {
     ("code-server", "latest"),
     ("pytorch-jupyter", "cu121"),
@@ -24,19 +26,26 @@ class ReleaseWorkflowTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.workflow = WORKFLOW.read_text()
+        cls.catalog = json.loads(MATRIX.read_text())
         cls.validate_section = cls.workflow.split("\n  promote:\n", 1)[0]
         cls.promote_section = cls.workflow.split("\n  promote:\n", 1)[1]
 
     def test_one_workflow_owns_all_stable_variants(self):
-        variants = set(
-            re.findall(
-                r"          - name: ([a-z-]+)\n"
-                r"            repository: ghcr\.io/labpod/[a-z-]+\n"
-                r"            tag: ([a-z0-9]+)",
-                self.validate_section,
-            )
-        )
+        variants = {
+            (item["name"], item["tag"]) for item in self.catalog["variants"]
+        }
         self.assertEqual(variants, EXPECTED_VARIANTS)
+        self.assertEqual(
+            self.workflow.count(
+                "fromJSON(needs.changes.outputs.variant_matrix)"
+            ),
+            2,
+        )
+        self.assertIn(
+            "fromJSON(needs.changes.outputs.package_matrix)", self.workflow
+        )
+        self.assertIn("scripts/release-matrix.py --paths-file", self.workflow)
+        self.assertIn("scripts/release-matrix.py --all", self.workflow)
         for old_name in (
             "build-code-server-image.yml",
             "build-pytorch-demo-images.yml",
@@ -90,6 +99,12 @@ class ReleaseWorkflowTest(unittest.TestCase):
         self.assertIn("name: release gate", self.workflow)
         self.assertIn('[[ "$VALIDATE_RESULT" == success ]]', self.workflow)
         self.assertIn('[[ "$PROMOTE_RESULT" == success ]]', self.workflow)
+
+    def test_images_are_linked_to_the_source_repository(self):
+        self.assertIn(
+            "labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}",
+            self.workflow,
+        )
 
     def test_smoke_script_rejects_missing_arguments(self):
         result = subprocess.run(

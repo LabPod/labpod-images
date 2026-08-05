@@ -32,6 +32,16 @@ class BumpImagePinsTest(unittest.TestCase):
             self.assertEqual(changed, ["workflow.yml"])
             self.assertEqual(path.read_text(), "torch: 2.9.0\ntorchvision: 0.23.0\n")
 
+    def test_catalog_pin_helpers_support_quoted_json_keys(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "matrix.json"
+            path.write_text('{"torch": "2.8.0", "torchvision": "0.23.0"}\n')
+            self.assertEqual(MODULE.newest_pinned([path], "torch"), "2.8.0")
+            MODULE.replace_in(
+                [path], "torch", "2.8.0", "2.9.0", root=Path(directory)
+            )
+            self.assertIn('"torch": "2.9.0"', path.read_text())
+
     def test_code_server_update_changes_version_and_both_digests(self):
         old_amd64 = "a" * 64
         old_arm64 = "b" * 64

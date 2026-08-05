@@ -1,0 +1,76 @@
+{
+  "variants": [
+    {
+      "name": "code-server",
+      "tag": "latest"
+    },
+    {
+      "name": "pytorch-jupyter",
+      "tag": "cu121",
+      "base": "docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04",
+      "torch_cuda": "cu121",
+      "torch": "2.5.1",
+      "torchvision": "0.20.1"
+    },
+    {
+      "name": "pytorch-jupyter",
+      "tag": "cu126",
+      "base": "docker.io/nvidia/cuda:12.6.3-runtime-ubuntu24.04",
+      "torch_cuda": "cu126",
+      "torch": "2.8.0",
+      "torchvision": "0.23.0"
+    },
+    {
+      "name": "pytorch-jupyter",
+      "tag": "cu129",
+      "base": "docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04",
+      "torch_cuda": "cu129",
+      "torch": "2.8.0",
+      "torchvision": "0.23.0"
+    },
+    {
+      "name": "tensorflow-jupyter",
+      "tag": "cu125",
+      "base": "docker.io/nvidia/cuda:12.5.1-runtime-ubuntu24.04",
+      "tf_version": "2.21.0",
+      "cudnn_version": "9.10.2.21"
+    },
+    {
+      "name": "scipy-jupyter",
+      "tag": "py312",
+      "base": "docker.io/ubuntu:24.04"
+    },
+    {
+      "name": "pytorch-demo",
+      "tag": "cpu",
+      "base": "docker.io/ubuntu:24.04",
+      "torch_cuda": "cpu",
+      "torch": "2.8.0",
+      "torchvision": "0.23.0"
+    },
+    {
+      "name": "pytorch-demo",
+      "tag": "cu121",
+      "base": "docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04",
+      "torch_cuda": "cu121",
+      "torch": "2.5.1",
+      "torchvision": "0.20.1"
+    },
+    {
+      "name": "pytorch-demo",
+      "tag": "cu126",
+      "base": "docker.io/nvidia/cuda:12.6.3-runtime-ubuntu24.04",
+      "torch_cuda": "cu126",
+      "torch": "2.8.0",
+      "torchvision": "0.23.0"
+    },
+    {
+      "name": "pytorch-demo",
+      "tag": "cu129",
+      "base": "docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04",
+      "torch_cuda": "cu129",
+      "torch": "2.8.0",
+      "torchvision": "0.23.0"
+    }
+  ]
+}

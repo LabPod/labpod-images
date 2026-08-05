@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bump the version pins that live in the image build workflow matrices.
+"""Bump the version pins that live in the managed-image release catalog.
 
 Dependabot handles GitHub Actions and Dockerfile base-image tags, but it cannot
 see the pip/torch/code-server versions embedded in the build matrices. This
@@ -9,9 +9,9 @@ image builds validate (no publish), so a bad wheel/version combination is caught
 before merge.
 
 Handled pins:
-  - torch / torchvision   -> images.yml (only the newest shared pin; the cu121
-                             old-driver line stays put)
-  - tensorflow            -> images.yml (tf_version)
+  - torch / torchvision   -> image-matrix.json (only the newest shared pin;
+                             the cu121 old-driver line stays put)
+  - tensorflow            -> image-matrix.json (tf_version)
   - code-server           -> every Dockerfile in CODE_SERVER_DOCKERFILES
                              (version + amd64/arm64 sha256). The pin is
                              duplicated per image because the Dockerfiles share
@@ -31,10 +31,9 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-WF = ROOT / ".github" / "workflows"
-IMAGE_WF = WF / "images.yml"
-PYTORCH_WFS = [IMAGE_WF]
-TF_WF = IMAGE_WF
+IMAGE_MATRIX = ROOT / ".github" / "image-matrix.json"
+PYTORCH_WFS = [IMAGE_MATRIX]
+TF_WF = IMAGE_MATRIX
 CODE_SERVER_DOCKERFILES = [
     ROOT / "images" / "pytorch-demo" / "Dockerfile",
     ROOT / "images" / "pytorch-jupyter" / "Dockerfile",
@@ -80,9 +79,9 @@ def sha256_of(url):
 
 
 def newest_pinned(files, key):
-    """Highest stable value of `<key>: <ver>` across the given workflow files."""
+    """Highest stable value of a named pin across the given catalog files."""
     found = set()
-    pat = re.compile(rf"\b{re.escape(key)}:\s*([0-9.]+)")
+    pat = re.compile(rf'\b{re.escape(key)}"?\s*:\s*"?([0-9.]+)')
     for f in files:
         for m in pat.finditer(f.read_text()):
             if is_stable(m.group(1)):
@@ -94,7 +93,11 @@ def replace_in(files, old_line_key, old, new, root=ROOT):
     changed = []
     for f in files:
         txt = f.read_text()
-        new_txt = re.sub(rf"(\b{re.escape(old_line_key)}:\s*){re.escape(old)}\b", rf"\g<1>{new}", txt)
+        new_txt = re.sub(
+            rf'(\b{re.escape(old_line_key)}"?\s*:\s*"?){re.escape(old)}\b',
+            rf"\g<1>{new}",
+            txt,
+        )
         if new_txt != txt:
             f.write_text(new_txt)
             changed.append(f.relative_to(root).as_posix())

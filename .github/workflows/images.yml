@@ -21,6 +21,8 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       release_required: ${{ steps.scope.outputs.release_required }}
+      variant_matrix: ${{ steps.scope.outputs.variant_matrix }}
+      package_matrix: ${{ steps.scope.outputs.package_matrix }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -35,7 +37,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "$EVENT_NAME" == schedule || "$EVENT_NAME" == workflow_dispatch ]]; then
-            echo 'release_required=true' >>"$GITHUB_OUTPUT"
+            python3 scripts/release-matrix.py --all >>"$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -44,16 +46,12 @@ jobs:
             base_sha=$PR_BASE_SHA
           fi
           if [[ -z "$base_sha" || "$base_sha" =~ ^0+$ ]]; then
-            echo 'release_required=true' >>"$GITHUB_OUTPUT"
+            python3 scripts/release-matrix.py --all >>"$GITHUB_OUTPUT"
             exit 0
           fi
 
           git diff --name-only "$base_sha" "$GITHUB_SHA" > /tmp/changed-files
-          if grep -Eq '^(images/|scripts/|\.github/dependabot\.yml$|\.github/workflows/(images|ci|bump-image-pins)\.yml$)' /tmp/changed-files; then
-            echo 'release_required=true' >>"$GITHUB_OUTPUT"
-          else
-            echo 'release_required=false' >>"$GITHUB_OUTPUT"
-          fi
+          python3 scripts/release-matrix.py --paths-file /tmp/changed-files >>"$GITHUB_OUTPUT"
 
   package-access:
     name: package access (${{ matrix.name }})
@@ -65,13 +63,7 @@ jobs:
       packages: write
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - {name: code-server, repository: ghcr.io/labpod/code-server, current_tag: latest}
-          - {name: pytorch-jupyter, repository: ghcr.io/labpod/pytorch-jupyter, current_tag: cu126}
-          - {name: tensorflow-jupyter, repository: ghcr.io/labpod/tensorflow-jupyter, current_tag: cu125}
-          - {name: scipy-jupyter, repository: ghcr.io/labpod/scipy-jupyter, current_tag: py312}
-          - {name: pytorch-demo, repository: ghcr.io/labpod/pytorch-demo, current_tag: cpu}
+      matrix: ${{ fromJSON(needs.changes.outputs.package_matrix) }}
     steps:
       - name: Log in to GHCR
         uses: docker/login-action@v4
@@ -101,109 +93,7 @@ jobs:
       packages: write
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - name: code-server
-            repository: ghcr.io/labpod/code-server
-            tag: latest
-            context: images/code-server
-            dockerfile: images/code-server/Dockerfile
-            kind: code-server
-            build_args: ''
-          - name: pytorch-jupyter
-            repository: ghcr.io/labpod/pytorch-jupyter
-            tag: cu121
-            context: images/pytorch-jupyter
-            dockerfile: images/pytorch-jupyter/Dockerfile
-            kind: pytorch-jupyter
-            build_args: |
-              CUDA_BASE_IMAGE=docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04
-              TORCH_CUDA=cu121
-              TORCH_VERSION=2.5.1
-              TORCHVISION_VERSION=0.20.1
-          - name: pytorch-jupyter
-            repository: ghcr.io/labpod/pytorch-jupyter
-            tag: cu126
-            context: images/pytorch-jupyter
-            dockerfile: images/pytorch-jupyter/Dockerfile
-            kind: pytorch-jupyter
-            build_args: |
-              CUDA_BASE_IMAGE=docker.io/nvidia/cuda:12.6.3-runtime-ubuntu24.04
-              TORCH_CUDA=cu126
-              TORCH_VERSION=2.8.0
-              TORCHVISION_VERSION=0.23.0
-          - name: pytorch-jupyter
-            repository: ghcr.io/labpod/pytorch-jupyter
-            tag: cu129
-            context: images/pytorch-jupyter
-            dockerfile: images/pytorch-jupyter/Dockerfile
-            kind: pytorch-jupyter
-            build_args: |
-              CUDA_BASE_IMAGE=docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04
-              TORCH_CUDA=cu129
-              TORCH_VERSION=2.8.0
-              TORCHVISION_VERSION=0.23.0
-          - name: tensorflow-jupyter
-            repository: ghcr.io/labpod/tensorflow-jupyter
-            tag: cu125
-            context: images/tensorflow-jupyter
-            dockerfile: images/tensorflow-jupyter/Dockerfile
-            kind: tensorflow-jupyter
-            build_args: |
-              CUDA_BASE_IMAGE=docker.io/nvidia/cuda:12.5.1-runtime-ubuntu24.04
-              TF_VERSION=2.21.0
-              CUDNN_VERSION=9.10.2.21
-          - name: scipy-jupyter
-            repository: ghcr.io/labpod/scipy-jupyter
-            tag: py312
-            context: images/scipy-jupyter
-            dockerfile: images/scipy-jupyter/Dockerfile
-            kind: scipy-jupyter
-            build_args: BASE_IMAGE=docker.io/ubuntu:24.04
-          - name: pytorch-demo
-            repository: ghcr.io/labpod/pytorch-demo
-            tag: cpu
-            context: images/pytorch-demo
-            dockerfile: images/pytorch-demo/Dockerfile
-            kind: pytorch-demo
-            build_args: |
-              CUDA_BASE_IMAGE=docker.io/ubuntu:24.04
-              TORCH_CUDA=cpu
-              TORCH_VERSION=2.8.0
-              TORCHVISION_VERSION=0.23.0
-          - name: pytorch-demo
-            repository: ghcr.io/labpod/pytorch-demo
-            tag: cu121
-            context: images/pytorch-demo
-            dockerfile: images/pytorch-demo/Dockerfile
-            kind: pytorch-demo
-            build_args: |
-              CUDA_BASE_IMAGE=docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04
-              TORCH_CUDA=cu121
-              TORCH_VERSION=2.5.1
-              TORCHVISION_VERSION=0.20.1
-          - name: pytorch-demo
-            repository: ghcr.io/labpod/pytorch-demo
-            tag: cu126
-            context: images/pytorch-demo
-            dockerfile: images/pytorch-demo/Dockerfile
-            kind: pytorch-demo
-            build_args: |
-              CUDA_BASE_IMAGE=docker.io/nvidia/cuda:12.6.3-runtime-ubuntu24.04
-              TORCH_CUDA=cu126
-              TORCH_VERSION=2.8.0
-              TORCHVISION_VERSION=0.23.0
-          - name: pytorch-demo
-            repository: ghcr.io/labpod/pytorch-demo
-            tag: cu129
-            context: images/pytorch-demo
-            dockerfile: images/pytorch-demo/Dockerfile
-            kind: pytorch-demo
-            build_args: |
-              CUDA_BASE_IMAGE=docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04
-              TORCH_CUDA=cu129
-              TORCH_VERSION=2.8.0
-              TORCHVISION_VERSION=0.23.0
+      matrix: ${{ fromJSON(needs.changes.outputs.variant_matrix) }}
     steps:
       - uses: actions/checkout@v7
 
@@ -228,6 +118,7 @@ jobs:
           platforms: linux/amd64
           provenance: mode=max
           sbom: true
+          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
           tags: ${{ matrix.repository }}:candidate-${{ github.sha }}-${{ matrix.tag }}
           build-args: ${{ matrix.build_args }}
 
@@ -256,18 +147,7 @@ jobs:
       packages: write
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - {name: code-server, repository: ghcr.io/labpod/code-server, tag: latest, kind: code-server}
-          - {name: pytorch-jupyter, repository: ghcr.io/labpod/pytorch-jupyter, tag: cu121, kind: pytorch-jupyter}
-          - {name: pytorch-jupyter, repository: ghcr.io/labpod/pytorch-jupyter, tag: cu126, kind: pytorch-jupyter}
-          - {name: pytorch-jupyter, repository: ghcr.io/labpod/pytorch-jupyter, tag: cu129, kind: pytorch-jupyter}
-          - {name: tensorflow-jupyter, repository: ghcr.io/labpod/tensorflow-jupyter, tag: cu125, kind: tensorflow-jupyter}
-          - {name: scipy-jupyter, repository: ghcr.io/labpod/scipy-jupyter, tag: py312, kind: scipy-jupyter}
-          - {name: pytorch-demo, repository: ghcr.io/labpod/pytorch-demo, tag: cpu, kind: pytorch-demo}
-          - {name: pytorch-demo, repository: ghcr.io/labpod/pytorch-demo, tag: cu121, kind: pytorch-demo}
-          - {name: pytorch-demo, repository: ghcr.io/labpod/pytorch-demo, tag: cu126, kind: pytorch-demo}
-          - {name: pytorch-demo, repository: ghcr.io/labpod/pytorch-demo, tag: cu129, kind: pytorch-demo}
+      matrix: ${{ fromJSON(needs.changes.outputs.variant_matrix) }}
     steps:
       - uses: actions/checkout@v7
 

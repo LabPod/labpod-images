@@ -1,19 +1,17 @@
 name: bump-image-pins
 
-# Bumps the version pins embedded in the image build matrices (torch/
+# Bumps the version pins embedded in the image release catalog (torch/
 # torchvision, TensorFlow, code-server) that Dependabot can't see, and opens a
 # review PR. The PR image matrix runs validate-only (no publish), so a bad
 # wheel/version combination is caught before merge.
 #
 # One-time owner setup — a scoped Personal Access Token:
-#   The torch/TensorFlow pins live in .github/workflows/images.yml, and
-#   GitHub forbids the default GITHUB_TOKEN from pushing changes to any file
-#   under .github/workflows/** (the `workflows` permission is not grantable to
-#   GITHUB_TOKEN). So this job pushes its branch with a fine-grained PAT that has
-#   contents:write + pull-requests:write + workflows:write on
-#   LabPod/labpod-images,
-#   stored as the repo secret BUMP_PIN_TOKEN. Without it the job no-ops with a
-#   warning (the base-image and action bumps still flow through Dependabot).
+#   This job pushes its branch with a fine-grained PAT so the resulting PR can
+#   trigger image validation workflows; GitHub suppresses workflow runs for PRs
+#   created by the repository GITHUB_TOKEN. Grant contents:write and
+#   pull-requests:write on LabPod/labpod-images and store the token as
+#   BUMP_PIN_TOKEN. Without it the job no-ops with a warning (base-image and
+#   action bumps still flow through Dependabot).
 
 on:
   workflow_dispatch:
@@ -36,7 +34,7 @@ jobs:
       - name: Check for bump token
         if: env.HAS_TOKEN != 'true'
         run: |
-          echo "::warning::BUMP_PIN_TOKEN is not set — skipping. Create a fine-grained PAT with contents+pull-requests+workflows write on LabPod/labpod-images and add it as the BUMP_PIN_TOKEN secret to enable auto-bump PRs. Dependabot still handles base images and actions."
+          echo "::warning::BUMP_PIN_TOKEN is not set — skipping. Create a fine-grained PAT with contents+pull-requests write on LabPod/labpod-images and add it as the BUMP_PIN_TOKEN secret to enable auto-bump PRs. Dependabot still handles base images and actions."
 
       - uses: actions/checkout@v7
         if: env.HAS_TOKEN == 'true'
@@ -58,16 +56,16 @@ jobs:
           title: 'images: bump build-matrix version pins'
           commit-message: 'images: bump build-matrix version pins'
           body: |
-            Automated bump of the version pins embedded in the image build
-            matrices (torch/torchvision, TensorFlow, code-server).
+            Automated bump of the version pins embedded in the image release
+            catalog (torch/torchvision, TensorFlow, code-server).
 
             ${{ steps.bump.outputs.summary }}
 
-            **Review before merge.** The complete image matrix on this PR runs
-            validate-only (no publish) — confirm it passes, and sanity-check
-            the torch/torchvision pairing, before merging. Merging to `main`
-            publishes candidates and promotes stable tags only after every
-            candidate passes.
+            **Review before merge.** The affected image variants on this PR run
+            validate-only (no publish) — confirm they pass, and sanity-check the
+            torch/torchvision pairing, before merging. Merging to `main`
+            publishes candidates and promotes the affected stable tags only
+            after every selected candidate passes.
 
             Opened by the `bump-image-pins` workflow.
           labels: automated, images

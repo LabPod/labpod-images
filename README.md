@@ -36,16 +36,22 @@ README for its supported matrix.
 ## Building and publishing
 
 Each image lives under `images/<name>` with its own Dockerfile and compatibility
-notes. Pull requests build the complete Linux `amd64` matrix without publishing
-it; the Dockerfiles run import and command checks as part of those builds.
+notes. Pull requests build only the affected image's Linux `amd64` variants
+without publishing them; the Dockerfiles run import and command checks as part
+of those builds. Changes to the shared release catalog, workflow, or smoke
+contract validate the complete matrix.
 
-Changes on `main` and the weekly schedule first publish commit-specific
-`candidate-<sha>-<tag>` tags. CI then pulls every candidate anonymously, checks
-the runtime image contract, exercises the installed Python stack, and probes
-the JupyterLab, TensorBoard, code-server, and ttyd HTTP launchers that apply to
-that image. Stable tags are promoted only after the complete candidate matrix
-passes. CI pulls and smokes every promoted stable tag again without registry
-credentials.
+Changes on `main` first publish commit-specific `candidate-<sha>-<tag>` tags for
+the affected variants. CI then pulls those candidates anonymously, checks the
+runtime image contract, exercises the installed Python stack, and probes the
+JupyterLab, TensorBoard, code-server, and ttyd HTTP launchers that apply to that
+image. Stable tags are promoted only after the complete affected candidate
+matrix passes. CI pulls and smokes every promoted stable tag again without
+registry credentials. The weekly schedule and manual dispatch run the complete
+matrix to catch base-image and floating-dependency drift.
+
+The release workflow stamps `org.opencontainers.image.source` on every image so
+GHCR can associate all five organization-scoped packages with this repository.
 
 Candidate tags are retained as an audit trail for the bytes promoted by a
 given source commit. CUDA execution and driver/GPU-architecture compatibility
@@ -62,9 +68,9 @@ visibility **Public** so LabPod hosts can pull without registry credentials.
 
 Version pins embedded in the build matrix are handled by the `bump-image-pins`
 workflow. It is optional and no-ops unless the repository secret
-`BUMP_PIN_TOKEN` has contents, pull-request, and workflow write access to this
-repository. Dependabot continues to maintain action and base-image pins without
-that secret.
+`BUMP_PIN_TOKEN` has contents and pull-request write access to this repository.
+Dependabot continues to maintain action and base-image pins without that
+secret.
 
 ## Relationship to LabPod
 
