@@ -37,10 +37,9 @@ updates:
       base-images:
         patterns:
           - "*"
-    # Base-distribution major upgrades are compatibility decisions, not routine
-    # dependency maintenance. Keep the current Ubuntu LTS until a dedicated PR
-    # changes and soaks it intentionally.
+    # Ubuntu's YY.MM tags look like semver minor updates to Dependabot, including
+    # transitions from an LTS to a short-lived release. Keep the current Ubuntu
+    # LTS floating tag and make every base-distribution change a dedicated,
+    # intentionally soaked PR.
     ignore:
       - dependency-name: ubuntu
-        update-types:
-          - version-update:semver-major
