@@ -2,9 +2,7 @@
 #
 # Built and pushed to ghcr.io/labpod/code-server:latest by
 # .github/workflows/images.yml. This is LabPod's managed
-# Code Server template image, not coder/code-server:latest: it deliberately
-# leaves UID 1000 unassigned so LabPod can inject the workspace owner's
-# persistent HOME entry.
+# Code Server template image, not coder/code-server:latest.
 FROM docker.io/ubuntu:24.04
 
 LABEL org.opencontainers.image.description="LabPod code-server workspace image that runs as the workspace owner."
@@ -37,11 +35,6 @@ RUN arch="$(dpkg --print-architecture)" \
     && apt-get install -y --no-install-recommends "/tmp/${code_server_deb}" \
     && rm -f "/tmp/${code_server_deb}" \
     && rm -rf /var/lib/apt/lists/*
-
-# LabPod starts every workspace as its Linux owner and injects that user's
-# passwd entry. Do not let a base or package account reserve UID 1000: an
-# existing entry wins over Podman's injection and redirects HOME.
-RUN sed -i -E '/^[^:]*:[^:]*:1000:/d' /etc/passwd
 
 # Build-time contract check. Published-image smoke tests additionally start the
 # default process and probe code-server over HTTP.

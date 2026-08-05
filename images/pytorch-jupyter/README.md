@@ -28,9 +28,8 @@ restrictions; use the table values for the normal supported path.
 
 ## Runtime model
 
-- UID 1000 is deliberately absent from `/etc/passwd`. LabPod injects the
-  workspace owner's account and persistent HOME at runtime; an image account
-  at that UID would take precedence and make the HOME disposable.
+- LabPod selects a free image-local UID/GID and maps it to the workspace
+  owner's Linux account; existing image accounts are supported.
 - The image contains CUDA user-space libraries, not an NVIDIA kernel driver.
   The host must provide a compatible NVIDIA driver and make the GPU available
   to the rootless Podman container.

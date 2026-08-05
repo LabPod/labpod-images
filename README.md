@@ -3,7 +3,8 @@
 This repository is the public source and publishing home for LabPod's managed
 workspace container images. The images are built for Podman workspaces and are
 designed to run as the LabPod workspace owner without requiring a fixed runtime
-user.
+user. They target the current LabPod server identity model; image mutations
+kept solely for compatibility with older server releases are not retained.
 
 ## Images
 

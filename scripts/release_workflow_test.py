@@ -57,8 +57,19 @@ class ReleaseWorkflowTest(unittest.TestCase):
         self.assertEqual(
             self.promote_section.count("docker buildx imagetools inspect --raw"), 2
         )
-        self.assertNotIn('docker buildx imagetools inspect "$CANDIDATE_REF"', self.promote_section)
-        self.assertNotIn('docker buildx imagetools inspect "$STABLE_REF"', self.promote_section)
+        self.assertNotIn(
+            'docker buildx imagetools inspect "$CANDIDATE_REF"',
+            self.promote_section,
+        )
+        self.assertNotIn(
+            'docker buildx imagetools inspect "$STABLE_REF"', self.promote_section
+        )
+
+    def test_images_do_not_delete_legacy_uid_1000_accounts(self):
+        for dockerfile in (ROOT / "images").glob("*/Dockerfile"):
+            with self.subTest(dockerfile=dockerfile):
+                contents = dockerfile.read_text()
+                self.assertNotIn("sed -i -E '/^[^:]*:[^:]*:1000:/d'", contents)
 
     def test_package_access_is_checked_before_expensive_builds(self):
         self.assertIn("name: package access (${{ matrix.name }})", self.workflow)

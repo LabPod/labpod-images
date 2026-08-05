@@ -126,12 +126,6 @@ RUN arch="$(dpkg --print-architecture)" \
     && rm -f "/tmp/${code_server_deb}" \
     && rm -rf /var/lib/apt/lists/*
 
-# LabPod starts every workspace as its Linux owner and injects that user's
-# passwd entry. Ubuntu/CUDA base images may reserve UID 1000 for `ubuntu`; an
-# existing image entry wins over Podman's injection and redirects HOME. Leave
-# UID 1000 unassigned in every published LabPod image.
-RUN sed -i -E '/^[^:]*:[^:]*:1000:/d' /etc/passwd
-
 # CPU execution catches broken TensorFlow installs on pull requests. Real-GPU
 # cuDNN compatibility remains a hardware acceptance gate.
 RUN CUDA_VISIBLE_DEVICES=-1 PYTHONDONTWRITEBYTECODE=1 python3 -c \

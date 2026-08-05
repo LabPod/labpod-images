@@ -4,10 +4,9 @@ This directory builds the managed LabPod Code Server image. It runs as the
 workspace owner supplied by LabPod, with code-server started on demand while
 the default process remains `sleep infinity`.
 
-The image deliberately has no `/etc/passwd` entry for UID 1000. LabPod mounts a
-persistent home directory and injects the workspace owner's account at that
-UID; a pre-existing image account would take precedence and direct user data to
-a throwaway home directory instead.
+LabPod selects a free image-local UID/GID at workspace start and maps it to the
+workspace owner's Linux account, so base-image accounts do not need to be
+removed or renumbered.
 
 The workflow publishes Linux `amd64` to `ghcr.io/labpod/code-server:latest`.
 The code-server `.deb` is version-pinned and checksum-verified in the

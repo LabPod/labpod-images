@@ -20,9 +20,8 @@ training workloads on the shared workstation.
 
 ## Runtime model
 
-- UID 1000 is deliberately absent from `/etc/passwd`. LabPod injects the
-  workspace owner's account and persistent HOME at runtime; an image account
-  at that UID would take precedence and make the HOME disposable.
+- LabPod selects a free image-local UID/GID and maps it to the workspace
+  owner's Linux account; existing image accounts are supported.
 - Python packages live in `/opt/venv`; it is first on `PATH`, so `python3`,
   `pip`, and `jupyter` use the image environment without modifying Ubuntu's
   system Python.
