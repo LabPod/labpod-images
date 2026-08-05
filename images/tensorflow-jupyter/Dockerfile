@@ -95,11 +95,13 @@ RUN installed="$(python3 -c 'import importlib.metadata as m; print(m.version("nv
        fi \
     && echo "cuDNN pinned at $installed"
 
-# TensorBoard ships with TensorFlow, so it is not installed separately.
+# TensorBoard is an explicit launcher contract. TensorFlow 2.21 no longer
+# installs its CLI as a transitive dependency, so keep it in the image directly.
 RUN uv pip install --no-cache \
         jupyterlab \
         ipywidgets \
         jupyter-resource-usage \
+        tensorboard \
         numpy \
         pandas \
         scikit-learn \
