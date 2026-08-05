@@ -3,7 +3,7 @@
 # Built and pushed to ghcr.io/labpod/code-server:latest by
 # .github/workflows/images.yml. This is LabPod's managed
 # Code Server template image, not coder/code-server:latest.
-FROM docker.io/ubuntu:24.04
+FROM docker.io/ubuntu:26.04
 
 LABEL org.opencontainers.image.description="LabPod code-server workspace image that runs as the workspace owner."
 
