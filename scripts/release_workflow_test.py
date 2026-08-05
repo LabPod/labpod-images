@@ -53,6 +53,13 @@ class ReleaseWorkflowTest(unittest.TestCase):
         self.assertIn("stable_digest", self.promote_section)
         self.assertIn("candidate_digest", self.promote_section)
 
+    def test_promotion_compares_raw_manifest_digests(self):
+        self.assertEqual(
+            self.promote_section.count("docker buildx imagetools inspect --raw"), 2
+        )
+        self.assertNotIn('docker buildx imagetools inspect "$CANDIDATE_REF"', self.promote_section)
+        self.assertNotIn('docker buildx imagetools inspect "$STABLE_REF"', self.promote_section)
+
     def test_package_access_is_checked_before_expensive_builds(self):
         self.assertIn("name: package access (${{ matrix.name }})", self.workflow)
         self.assertIn("needs: [changes, package-access]", self.validate_section)

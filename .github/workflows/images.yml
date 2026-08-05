@@ -288,8 +288,8 @@ jobs:
         run: |
           set -euo pipefail
           docker buildx imagetools create --tag "$STABLE_REF" "$CANDIDATE_REF"
-          candidate_digest=$(docker buildx imagetools inspect "$CANDIDATE_REF" | awk '$1 == "Digest:" { print $2; exit }')
-          stable_digest=$(docker buildx imagetools inspect "$STABLE_REF" | awk '$1 == "Digest:" { print $2; exit }')
+          candidate_digest=$(docker buildx imagetools inspect --raw "$CANDIDATE_REF" | sha256sum | awk '{ print "sha256:" $1 }')
+          stable_digest=$(docker buildx imagetools inspect --raw "$STABLE_REF" | sha256sum | awk '{ print "sha256:" $1 }')
           [[ -n "$candidate_digest" && "$stable_digest" == "$candidate_digest" ]]
 
       - name: Verify stable tag through anonymous pull
