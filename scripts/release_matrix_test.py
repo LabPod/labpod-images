@@ -32,9 +32,9 @@ class ReleaseMatrixTest(unittest.TestCase):
         self.assertEqual(
             self.names_and_tags(scope),
             [
-                ("pytorch-jupyter", "v1-cu121"),
-                ("pytorch-jupyter", "v1-cu126"),
-                ("pytorch-jupyter", "v1-cu129"),
+                ("pytorch-jupyter", "v2-cu121"),
+                ("pytorch-jupyter", "v2-cu126"),
+                ("pytorch-jupyter", "v2-cu129"),
             ],
         )
         self.assertEqual(self.package_names(scope), ["pytorch-jupyter"])
@@ -48,7 +48,7 @@ class ReleaseMatrixTest(unittest.TestCase):
         )
         self.assertEqual(
             self.names_and_tags(scope),
-            [("code-server", "v1"), ("tensorflow-jupyter", "v1-cu125")],
+            [("code-server", "v2"), ("tensorflow-jupyter", "v2-cu125")],
         )
         self.assertEqual(
             self.package_names(scope), ["code-server", "tensorflow-jupyter"]
@@ -110,13 +110,13 @@ class ReleaseMatrixTest(unittest.TestCase):
         tags = self.names_and_tags(scope)
         self.assertNotIn(("code-server", "latest"), tags)
         for _, tag in tags:
-            self.assertTrue(tag == "v1" or tag.startswith("v1-"), tag)
+            self.assertTrue(tag == "v2" or tag.startswith("v2-"), tag)
 
         expected_new = {
-            ("miniforge-jupyterlab", "v1-cpu"),
-            ("uv-jupyterlab", "v1-py312"),
-            ("r-ml-jupyterlab", "v1-cpu"),
-            ("rstudio-server", "v1-cpu"),
+            ("miniforge-jupyterlab", "v2-cpu"),
+            ("uv-jupyterlab", "v2-py312"),
+            ("r-ml-jupyterlab", "v2-cpu"),
+            ("rstudio-server", "v2-cpu"),
         }
         for name in (
             "llm-huggingface",
@@ -125,7 +125,7 @@ class ReleaseMatrixTest(unittest.TestCase):
             "parallel-dev",
         ):
             expected_new.update(
-                (name, f"v1-{channel}")
+                (name, f"v2-{channel}")
                 for channel in ("cu121", "cu126", "cu129")
             )
         self.assertTrue(expected_new.issubset(set(tags)))
@@ -154,14 +154,14 @@ class ReleaseMatrixTest(unittest.TestCase):
     def test_default_tags_follow_an_advanced_release_prefix(self):
         with tempfile.TemporaryDirectory() as directory:
             catalog = Path(directory) / "matrix.json"
-            source = MODULE.CATALOG.read_text().replace('"tag": "v1', '"tag": "v2')
+            source = MODULE.CATALOG.read_text().replace('"tag": "v2', '"tag": "v3')
             catalog.write_text(source)
             variants = MODULE.load_variants(catalog)
             names = list(dict.fromkeys(item["name"] for item in variants))
             for name in names:
                 with self.subTest(name=name):
                     default_tag = MODULE.package_current_tag(name, variants)
-                    self.assertTrue(default_tag == "v2" or default_tag.startswith("v2-"))
+                    self.assertTrue(default_tag == "v3" or default_tag.startswith("v3-"))
                     self.assertIn(
                         (name, default_tag),
                         {(item["name"], item["tag"]) for item in variants},

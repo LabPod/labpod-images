@@ -130,15 +130,12 @@ case "$image_kind" in
     "$engine" exec "$container_id" python3 -c \
       'import aim, mlflow, torch, torchvision; x=torch.tensor([1.0, 2.0]); assert torch.dot(x, x).item() == 5.0'
     "$engine" exec "$container_id" code-server --version
-    "$engine" exec "$container_id" ttyd --version
     probe_http jupyter 8888 /lab \
       "jupyter lab --allow-root --no-browser --ip=127.0.0.1 --port=8888 --ServerApp.token='' --ServerApp.password=''"
     probe_http tensorboard 6006 / \
       "tensorboard --host 127.0.0.1 --port 6006 --logdir /tmp/tensorboard"
     probe_http code-server 8080 / \
       "code-server --bind-addr 127.0.0.1:8080 --auth none /work"
-    probe_http ttyd 7681 / \
-      "ttyd -i 127.0.0.1 -p 7681 sh"
     ;;
   miniforge-jupyterlab)
     "$engine" exec "$container_id" conda --version
@@ -185,7 +182,6 @@ case "$image_kind" in
     "$engine" exec "$container_id" python3 -c \
       'import aim, gradio, jupyterlab, mlflow, sklearn, tensorboard'
     "$engine" exec "$container_id" code-server --version
-    "$engine" exec "$container_id" ttyd --version
     probe_http jupyter 8888 /lab \
       "jupyter lab --allow-root --no-browser --ip=127.0.0.1 --port=8888 --ServerApp.token='' --ServerApp.password=''"
     probe_http code-server 8080 / \

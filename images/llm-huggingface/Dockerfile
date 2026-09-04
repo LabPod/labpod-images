@@ -14,7 +14,7 @@ ARG CODE_SERVER_SHA256_ARM64=81fa5486a674428507cfb68025764646bdb99c345b8ca798fd9
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         bash ca-certificates curl git git-lfs htop iproute2 jq less nano \
-        openssh-client python3 python3-pip python3-venv rsync tmux tree ttyd \
+        openssh-client python3 python3-pip python3-venv rsync tmux tree \
         unzip vim wget \
     && (apt-get install -y --no-install-recommends btop || true) \
     && git lfs install --system \
@@ -53,5 +53,5 @@ RUN arch="$(dpkg --print-architecture)" \
     && code-server --version
 
 WORKDIR /work
-EXPOSE 8888 6006 8080 7681
+EXPOSE 8888 6006 8080
 ENTRYPOINT ["sleep", "infinity"]

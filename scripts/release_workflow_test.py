@@ -9,16 +9,16 @@ ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW = ROOT / ".github" / "workflows" / "images.yml"
 MATRIX = ROOT / ".github" / "image-matrix.json"
 EXPECTED_VARIANTS = {
-    ("code-server", "v1"),
-    ("pytorch-jupyter", "v1-cu121"),
-    ("pytorch-jupyter", "v1-cu126"),
-    ("pytorch-jupyter", "v1-cu129"),
-    ("tensorflow-jupyter", "v1-cu125"),
-    ("scipy-jupyter", "v1-py312"),
-    ("pytorch-demo", "v1-cpu"),
-    ("pytorch-demo", "v1-cu121"),
-    ("pytorch-demo", "v1-cu126"),
-    ("pytorch-demo", "v1-cu129"),
+    ("code-server", "v2"),
+    ("pytorch-jupyter", "v2-cu121"),
+    ("pytorch-jupyter", "v2-cu126"),
+    ("pytorch-jupyter", "v2-cu129"),
+    ("tensorflow-jupyter", "v2-cu125"),
+    ("scipy-jupyter", "v2-py312"),
+    ("pytorch-demo", "v2-cpu"),
+    ("pytorch-demo", "v2-cu121"),
+    ("pytorch-demo", "v2-cu126"),
+    ("pytorch-demo", "v2-cu129"),
 }
 EXPECTED_NEW_IMAGES = {
     "miniforge-jupyterlab",
@@ -32,14 +32,14 @@ EXPECTED_NEW_IMAGES = {
 }
 EXPECTED_VARIANTS.update(
     {
-        ("miniforge-jupyterlab", "v1-cpu"),
-        ("uv-jupyterlab", "v1-py312"),
-        ("r-ml-jupyterlab", "v1-cpu"),
-        ("rstudio-server", "v1-cpu"),
+        ("miniforge-jupyterlab", "v2-cpu"),
+        ("uv-jupyterlab", "v2-py312"),
+        ("r-ml-jupyterlab", "v2-cpu"),
+        ("rstudio-server", "v2-cpu"),
     }
 )
 EXPECTED_VARIANTS.update(
-    (name, f"v1-{channel}")
+    (name, f"v2-{channel}")
     for name in (
         "llm-huggingface",
         "comfyui-stable-diffusion",

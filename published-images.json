@@ -8,11 +8,11 @@
       "dockerfile": "images/code-server/Dockerfile",
       "build_args": {},
       "variant_build_args": {
-        "v1": {}
+        "v2": {}
       },
       "published": {
-        "ref": "ghcr.io/labpod/code-server:v1",
-        "definition_digest": "sha256:18ad53c4321419bc224624a3d98f2548cebfe2b4a76e9690a0e2f83459f8fddf",
+        "ref": "ghcr.io/labpod/code-server:v2",
+        "definition_digest": "sha256:e3e18a94970eea7bc7e040ed74d75e9fc09f11f75f78c26ba6554f376c9f2663",
         "variants": []
       }
     },
@@ -26,19 +26,19 @@
         "TORCH_VERSION": "2.8.0"
       },
       "variant_build_args": {
-        "v1-cu121": {
+        "v2-cu121": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04",
           "TORCHVISION_VERSION": "0.20.1",
           "TORCH_CUDA": "cu121",
           "TORCH_VERSION": "2.5.1"
         },
-        "v1-cu126": {
+        "v2-cu126": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.6.3-runtime-ubuntu24.04",
           "TORCHVISION_VERSION": "0.23.0",
           "TORCH_CUDA": "cu126",
           "TORCH_VERSION": "2.8.0"
         },
-        "v1-cu129": {
+        "v2-cu129": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04",
           "TORCHVISION_VERSION": "0.23.0",
           "TORCH_CUDA": "cu129",
@@ -46,12 +46,12 @@
         }
       },
       "published": {
-        "ref": "ghcr.io/labpod/pytorch-jupyter:v1-cu126",
-        "definition_digest": "sha256:7bbd66c14598653bd8cfd37bba9aed1d5c79b9d6a8bdadf2e7c0abb19f88f961",
+        "ref": "ghcr.io/labpod/pytorch-jupyter:v2-cu126",
+        "definition_digest": "sha256:5eef25ae7db0a9ef36f74680eeb6ce124eb68f6fb7a83d53bd92e6830254562c",
         "variants": [
           {
-            "ref": "ghcr.io/labpod/pytorch-jupyter:v1-cu121",
-            "definition_digest": "sha256:3eb41557f000978b5c23ed6fb8a35eea33c6341934313ea4eaed422d85102cb1",
+            "ref": "ghcr.io/labpod/pytorch-jupyter:v2-cu121",
+            "definition_digest": "sha256:c5895cc07bad73818afc32b9fc66932507b77f1cc70d56184ffb5a6c83e7b990",
             "build_args": {
               "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04",
               "TORCHVISION_VERSION": "0.20.1",
@@ -60,8 +60,8 @@
             }
           },
           {
-            "ref": "ghcr.io/labpod/pytorch-jupyter:v1-cu129",
-            "definition_digest": "sha256:0967ba870573a89a595a3c10c40da6aadb398c09c3cbf26e812f035fb3d6cde2",
+            "ref": "ghcr.io/labpod/pytorch-jupyter:v2-cu129",
+            "definition_digest": "sha256:ee8ab1d3313900199946c3d1c9092f7adce2c2cd5447f7fbf58658b786245551",
             "build_args": {
               "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04",
               "TORCHVISION_VERSION": "0.23.0",
@@ -81,15 +81,15 @@
         "TF_VERSION": "2.21.0"
       },
       "variant_build_args": {
-        "v1-cu125": {
+        "v2-cu125": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.5.1-runtime-ubuntu24.04",
           "CUDNN_VERSION": "9.10.2.21",
           "TF_VERSION": "2.21.0"
         }
       },
       "published": {
-        "ref": "ghcr.io/labpod/tensorflow-jupyter:v1-cu125",
-        "definition_digest": "sha256:e8389d470ab3f41e9eb994dd2739d5ffdec69b76f9dfeed9d30ff4f17473195a",
+        "ref": "ghcr.io/labpod/tensorflow-jupyter:v2-cu125",
+        "definition_digest": "sha256:deb386bc1e2b2b4e2f7057ab7115098cbc0eeb475bd60a7f2de8a278ecf1065d",
         "variants": []
       }
     },
@@ -100,13 +100,13 @@
         "BASE_IMAGE": "docker.io/ubuntu:24.04"
       },
       "variant_build_args": {
-        "v1-py312": {
+        "v2-py312": {
           "BASE_IMAGE": "docker.io/ubuntu:24.04"
         }
       },
       "published": {
-        "ref": "ghcr.io/labpod/scipy-jupyter:v1-py312",
-        "definition_digest": "sha256:af7c3cb65f4409e239637de0b1f230cc30e1c341989397d6da83ee78e7b4f21c",
+        "ref": "ghcr.io/labpod/scipy-jupyter:v2-py312",
+        "definition_digest": "sha256:75570f99807f6f3cdbfa410ed9811b640bb07e598befc17fe4cdd5247766ef54",
         "variants": []
       }
     },
@@ -120,25 +120,25 @@
         "TORCH_VERSION": "2.8.0"
       },
       "variant_build_args": {
-        "v1-cpu": {
+        "v2-cpu": {
           "CUDA_BASE_IMAGE": "docker.io/ubuntu:24.04",
           "TORCHVISION_VERSION": "0.23.0",
           "TORCH_CUDA": "cpu",
           "TORCH_VERSION": "2.8.0"
         },
-        "v1-cu121": {
+        "v2-cu121": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04",
           "TORCHVISION_VERSION": "0.20.1",
           "TORCH_CUDA": "cu121",
           "TORCH_VERSION": "2.5.1"
         },
-        "v1-cu126": {
+        "v2-cu126": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.6.3-runtime-ubuntu24.04",
           "TORCHVISION_VERSION": "0.23.0",
           "TORCH_CUDA": "cu126",
           "TORCH_VERSION": "2.8.0"
         },
-        "v1-cu129": {
+        "v2-cu129": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04",
           "TORCHVISION_VERSION": "0.23.0",
           "TORCH_CUDA": "cu129",
@@ -146,12 +146,12 @@
         }
       },
       "published": {
-        "ref": "ghcr.io/labpod/pytorch-demo:v1-cpu",
-        "definition_digest": "sha256:0d93470861b66cd52bd216eb87ca77c9b5b10b57934cfaf746823d8099a1edce",
+        "ref": "ghcr.io/labpod/pytorch-demo:v2-cpu",
+        "definition_digest": "sha256:c0055984ea9ac588b270e6260da10ee73012d484b921f25be5900d0f4fc29cee",
         "variants": [
           {
-            "ref": "ghcr.io/labpod/pytorch-demo:v1-cu121",
-            "definition_digest": "sha256:0588f6dd4f5aec1d27bb3f59adc334e14155ed0523a843e4e04e7e389e488246",
+            "ref": "ghcr.io/labpod/pytorch-demo:v2-cu121",
+            "definition_digest": "sha256:12153e9c02519c9472bef92fc668e67c402c2834f772b35fc7452d69d388ca6a",
             "build_args": {
               "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04",
               "TORCHVISION_VERSION": "0.20.1",
@@ -160,8 +160,8 @@
             }
           },
           {
-            "ref": "ghcr.io/labpod/pytorch-demo:v1-cu126",
-            "definition_digest": "sha256:3daf81addfbc62bfd10f7373b61ec2700a2621675faf6a762e27ba9e108a6561",
+            "ref": "ghcr.io/labpod/pytorch-demo:v2-cu126",
+            "definition_digest": "sha256:88cb388b33a59fc3b3cf9efb1fcc7215404b7c6af5a43bdd9c5b2fe1ed367394",
             "build_args": {
               "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.6.3-runtime-ubuntu24.04",
               "TORCHVISION_VERSION": "0.23.0",
@@ -170,8 +170,8 @@
             }
           },
           {
-            "ref": "ghcr.io/labpod/pytorch-demo:v1-cu129",
-            "definition_digest": "sha256:f4d07440e0f062138489aaa69348537f730f47791bd9ae7966ba223634437776",
+            "ref": "ghcr.io/labpod/pytorch-demo:v2-cu129",
+            "definition_digest": "sha256:cde551e46583973156c750fdc2f108054c88522d0a87a2847e428b7537bc6f26",
             "build_args": {
               "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04",
               "TORCHVISION_VERSION": "0.23.0",
@@ -189,12 +189,12 @@
         "BASE_IMAGE": "docker.io/condaforge/miniforge3:25.3.0-3"
       },
       "variant_build_args": {
-        "v1-cpu": {
+        "v2-cpu": {
           "BASE_IMAGE": "docker.io/condaforge/miniforge3:25.3.0-3"
         }
       },
       "published": {
-        "ref": "ghcr.io/labpod/miniforge-jupyterlab:v1-cpu",
+        "ref": "ghcr.io/labpod/miniforge-jupyterlab:v2-cpu",
         "definition_digest": "sha256:c770ed99483c5e8baeeab769cdd4dff4bf4ce699baf38f2d40950ca60b6e9e71",
         "variants": []
       }
@@ -206,12 +206,12 @@
         "PYTHON_BASE": "ghcr.io/astral-sh/uv:python3.12-bookworm-slim"
       },
       "variant_build_args": {
-        "v1-py312": {
+        "v2-py312": {
           "PYTHON_BASE": "ghcr.io/astral-sh/uv:python3.12-bookworm-slim"
         }
       },
       "published": {
-        "ref": "ghcr.io/labpod/uv-jupyterlab:v1-py312",
+        "ref": "ghcr.io/labpod/uv-jupyterlab:v2-py312",
         "definition_digest": "sha256:3035387a6251dcf474c42b4e211ec6063454c0bfd67535b74301c640aec667be",
         "variants": []
       }
@@ -223,13 +223,13 @@
         "BASE_IMAGE": "docker.io/rocker/r-ver:4.4.1"
       },
       "variant_build_args": {
-        "v1-cpu": {
+        "v2-cpu": {
           "BASE_IMAGE": "docker.io/rocker/r-ver:4.4.1"
         }
       },
       "published": {
-        "ref": "ghcr.io/labpod/r-ml-jupyterlab:v1-cpu",
-        "definition_digest": "sha256:d842f9150f87afec958fa8ca47bd54f7bada61dd4ebdb939ec03e4be06a7b5f4",
+        "ref": "ghcr.io/labpod/r-ml-jupyterlab:v2-cpu",
+        "definition_digest": "sha256:4bb8d9ab84c3f48757c76387987464ba56ec5aef028c2745a1b42d7f3644f5e6",
         "variants": []
       }
     },
@@ -240,12 +240,12 @@
         "BASE_IMAGE": "docker.io/rocker/rstudio:4.4.1"
       },
       "variant_build_args": {
-        "v1-cpu": {
+        "v2-cpu": {
           "BASE_IMAGE": "docker.io/rocker/rstudio:4.4.1"
         }
       },
       "published": {
-        "ref": "ghcr.io/labpod/rstudio-server:v1-cpu",
+        "ref": "ghcr.io/labpod/rstudio-server:v2-cpu",
         "definition_digest": "sha256:474ee27ed02fb75fd3d0d225253c67892188e35c792c592a2515e87c1cb09463",
         "variants": []
       }
@@ -259,29 +259,29 @@
         "TORCH_VERSION": "2.8.0"
       },
       "variant_build_args": {
-        "v1-cu121": {
+        "v2-cu121": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04",
           "TORCH_CUDA": "cu121",
           "TORCH_VERSION": "2.5.1"
         },
-        "v1-cu126": {
+        "v2-cu126": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.6.3-runtime-ubuntu24.04",
           "TORCH_CUDA": "cu126",
           "TORCH_VERSION": "2.8.0"
         },
-        "v1-cu129": {
+        "v2-cu129": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04",
           "TORCH_CUDA": "cu129",
           "TORCH_VERSION": "2.8.0"
         }
       },
       "published": {
-        "ref": "ghcr.io/labpod/llm-huggingface:v1-cu126",
-        "definition_digest": "sha256:b5ab57ed8b56474982a97acc58a1e061154d76263f0f35458a3b65b5d620de81",
+        "ref": "ghcr.io/labpod/llm-huggingface:v2-cu126",
+        "definition_digest": "sha256:75818d36f7bd227fa3e7ace5a878853f025d7ae4a5cf7658a1d25b3bbda1fcc6",
         "variants": [
           {
-            "ref": "ghcr.io/labpod/llm-huggingface:v1-cu121",
-            "definition_digest": "sha256:eeb256aaa663ddbc66575bccfbe11cc06d9c58013f59876bd0ac64ebbc0828df",
+            "ref": "ghcr.io/labpod/llm-huggingface:v2-cu121",
+            "definition_digest": "sha256:1681725d465b0b77bfce3537b0fcc35f06428c3efc766398c735946c5d22eea3",
             "build_args": {
               "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04",
               "TORCH_CUDA": "cu121",
@@ -289,8 +289,8 @@
             }
           },
           {
-            "ref": "ghcr.io/labpod/llm-huggingface:v1-cu129",
-            "definition_digest": "sha256:d39504fd2a2860f11d1fc7bf58ad1d826cfba7c2265a0842fb93b08ee4f500a7",
+            "ref": "ghcr.io/labpod/llm-huggingface:v2-cu129",
+            "definition_digest": "sha256:5e53ec4f562bc1f8ec41a0043626de0a89a05aa34516b3010c93cbb310892e34",
             "build_args": {
               "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04",
               "TORCH_CUDA": "cu129",
@@ -312,7 +312,7 @@
         "TORCH_VERSION": "2.8.0"
       },
       "variant_build_args": {
-        "v1-cu121": {
+        "v2-cu121": {
           "COMFYUI_REF": "v0.3.51",
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04",
           "TORCHAUDIO_VERSION": "2.5.1",
@@ -320,7 +320,7 @@
           "TORCH_CUDA": "cu121",
           "TORCH_VERSION": "2.5.1"
         },
-        "v1-cu126": {
+        "v2-cu126": {
           "COMFYUI_REF": "v0.3.51",
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.6.3-runtime-ubuntu24.04",
           "TORCHAUDIO_VERSION": "2.8.0",
@@ -328,7 +328,7 @@
           "TORCH_CUDA": "cu126",
           "TORCH_VERSION": "2.8.0"
         },
-        "v1-cu129": {
+        "v2-cu129": {
           "COMFYUI_REF": "v0.3.51",
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04",
           "TORCHAUDIO_VERSION": "2.8.0",
@@ -338,11 +338,11 @@
         }
       },
       "published": {
-        "ref": "ghcr.io/labpod/comfyui-stable-diffusion:v1-cu126",
+        "ref": "ghcr.io/labpod/comfyui-stable-diffusion:v2-cu126",
         "definition_digest": "sha256:5434c4ac7bb5acf117a23c92a51fbfc954acf79975e02aa3c89966e7112a8d5c",
         "variants": [
           {
-            "ref": "ghcr.io/labpod/comfyui-stable-diffusion:v1-cu121",
+            "ref": "ghcr.io/labpod/comfyui-stable-diffusion:v2-cu121",
             "definition_digest": "sha256:64d098fd36c43418b786190a17c6597867b4ea98964d1d2357ce425da970b2cd",
             "build_args": {
               "COMFYUI_REF": "v0.3.51",
@@ -354,7 +354,7 @@
             }
           },
           {
-            "ref": "ghcr.io/labpod/comfyui-stable-diffusion:v1-cu129",
+            "ref": "ghcr.io/labpod/comfyui-stable-diffusion:v2-cu129",
             "definition_digest": "sha256:a6810ed4ad9aa0b9e6f1bc74d532a31595d6e1312b71a1afb6783ab23d24fa5c",
             "build_args": {
               "COMFYUI_REF": "v0.3.51",
@@ -375,30 +375,30 @@
         "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.6.3-runtime-ubuntu24.04"
       },
       "variant_build_args": {
-        "v1-cu121": {
+        "v2-cu121": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04"
         },
-        "v1-cu126": {
+        "v2-cu126": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.6.3-runtime-ubuntu24.04"
         },
-        "v1-cu129": {
+        "v2-cu129": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04"
         }
       },
       "published": {
-        "ref": "ghcr.io/labpod/cuda-composite:v1-cu126",
-        "definition_digest": "sha256:6661a18e0f2ffd1f0047b3d420880ae80a1897421d01fcd8952ee54dd1cdab56",
+        "ref": "ghcr.io/labpod/cuda-composite:v2-cu126",
+        "definition_digest": "sha256:26a3ecfb2383e9b23c3016cf5fed3d3c1999415f4f9e4c17dada2f51a440cdac",
         "variants": [
           {
-            "ref": "ghcr.io/labpod/cuda-composite:v1-cu121",
-            "definition_digest": "sha256:ec5e4e14460cbce8dcfa6727c95e92442467901a535a4b00d412099422e156c5",
+            "ref": "ghcr.io/labpod/cuda-composite:v2-cu121",
+            "definition_digest": "sha256:aafaa9b71dacfa27bc4936f981fb84d98d9e5d5eb0a3c55f12e9bf5419401539",
             "build_args": {
               "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04"
             }
           },
           {
-            "ref": "ghcr.io/labpod/cuda-composite:v1-cu129",
-            "definition_digest": "sha256:672ceaf6ad75061b0117f54a9b12271c25f64b1bb2ac0f8e552062c5294edb2d",
+            "ref": "ghcr.io/labpod/cuda-composite:v2-cu129",
+            "definition_digest": "sha256:83461295f20bd72bef1f83634acb374396f9f1468af8b4c7e0a4937f07f9cd61",
             "build_args": {
               "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04"
             }
@@ -413,29 +413,29 @@
         "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.6.3-devel-ubuntu24.04"
       },
       "variant_build_args": {
-        "v1-cu121": {
+        "v2-cu121": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.1.1-devel-ubuntu22.04"
         },
-        "v1-cu126": {
+        "v2-cu126": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.6.3-devel-ubuntu24.04"
         },
-        "v1-cu129": {
+        "v2-cu129": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.9.1-devel-ubuntu24.04"
         }
       },
       "published": {
-        "ref": "ghcr.io/labpod/parallel-dev:v1-cu126",
+        "ref": "ghcr.io/labpod/parallel-dev:v2-cu126",
         "definition_digest": "sha256:5176996d47526a2d10a0ffce3293e5b8ad341e37cd512b859143d6dd36db85ce",
         "variants": [
           {
-            "ref": "ghcr.io/labpod/parallel-dev:v1-cu121",
+            "ref": "ghcr.io/labpod/parallel-dev:v2-cu121",
             "definition_digest": "sha256:0fe1baa27a1786d0d5c645138ac40ac4b65ec5f42ae8a79c049c44b207dca814",
             "build_args": {
               "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.1.1-devel-ubuntu22.04"
             }
           },
           {
-            "ref": "ghcr.io/labpod/parallel-dev:v1-cu129",
+            "ref": "ghcr.io/labpod/parallel-dev:v2-cu129",
             "definition_digest": "sha256:67026da351cd1c5fb68b070c508270204cd42cb4c7614c182652457f7cec598e",
             "build_args": {
               "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.9.1-devel-ubuntu24.04"

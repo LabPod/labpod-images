@@ -11,7 +11,7 @@ The GitHub Actions workflow publishes Linux `amd64` images to
 
 | Image tag | Base | Python | Stack |
 | --- | --- | --- | --- |
-| `v1-py312` | Ubuntu 24.04 | 3.12 | JupyterLab, ipywidgets, jupyter-resource-usage, NumPy, SciPy, pandas, scikit-learn, matplotlib, seaborn, bokeh |
+| `v2-py312` | Ubuntu 24.04 | 3.12 | JupyterLab, ipywidgets, jupyter-resource-usage, NumPy, SciPy, pandas, scikit-learn, matplotlib, seaborn, bokeh |
 
 This is a **CPU-only** image — no CUDA base and no GPU stack — so there is no
 host-driver requirement. It is the right pick for data wrangling, statistics,

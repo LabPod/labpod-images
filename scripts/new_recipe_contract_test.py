@@ -21,9 +21,15 @@ class NewRecipeContractTest(unittest.TestCase):
             'reticulate::import("numpy")',
             "command -v jupyter",
             "command -v tensorboard",
-            "ttyd",
         ):
             self.assertIn(marker, text)
+
+    def test_managed_recipes_do_not_ship_ttyd(self):
+        for path in (ROOT / "images").glob("*/*"):
+            if path.name not in {"Dockerfile", "README.md"}:
+                continue
+            with self.subTest(path=path.relative_to(ROOT)):
+                self.assertNotIn("ttyd", path.read_text().lower())
 
     def test_rstudio_installs_and_load_checks_advertised_packages(self):
         text = dockerfile("rstudio-server")

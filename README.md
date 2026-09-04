@@ -9,35 +9,35 @@ kept solely for compatibility with older server releases are not retained.
 ## Images
 
 Pull sizes below are approximate compressed transfer sizes for Linux amd64.
-They are capacity-planning estimates for the initial `v1` catalog; registry
+They are capacity-planning estimates for the current `v2` catalog; registry
 package pages are authoritative once the workflow has published the images.
 
 | Image | Purpose | Immutable tag(s) | Approx. pull size per tag |
 |---|---|---|---|
-| `code-server` | Browser-based VS Code workspace | `v1` | 180 MB |
-| `pytorch-jupyter` | PyTorch, JupyterLab, TensorBoard, code-server | `v1-cu121`, `v1-cu126`, `v1-cu129` | 4.3 GB, 4.8 GB, 5.0 GB |
-| `tensorflow-jupyter` | TensorFlow, JupyterLab, TensorBoard, code-server | `v1-cu125` | 4.2 GB |
-| `scipy-jupyter` | CPU data-science and JupyterLab | `v1-py312` | 850 MB |
-| `pytorch-demo` | LabPod demonstration workspace | `v1-cpu`, `v1-cu121`, `v1-cu126`, `v1-cu129` | 2.2 GB, 4.4 GB, 4.9 GB, 5.1 GB |
-| `miniforge-jupyterlab` | conda-forge Python and JupyterLab | `v1-cpu` | 750 MB |
-| `uv-jupyterlab` | Lightweight uv/Python and JupyterLab | `v1-py312` | 420 MB |
-| `r-ml-jupyterlab` | R ML packages, IRkernel, and JupyterLab | `v1-cpu` | 2.4 GB |
-| `rstudio-server` | Rootless, proxy-authenticated RStudio Server | `v1-cpu` | 1.8 GB |
-| `llm-huggingface` | Hugging Face fine-tuning/inference stack | `v1-cu121`, `v1-cu126`, `v1-cu129` | 4.9 GB, 5.3 GB, 5.5 GB |
-| `comfyui-stable-diffusion` | ComfyUI without bundled model weights | `v1-cu121`, `v1-cu126`, `v1-cu129` | 4.8 GB, 5.2 GB, 5.4 GB |
-| `cuda-composite` | CUDA, JupyterLab, MLflow, Aim, code-server | `v1-cu121`, `v1-cu126`, `v1-cu129` | 2.1 GB, 2.5 GB, 2.7 GB |
-| `parallel-dev` | CUDA/MPI/OpenMP toolchain and OSS code-server | `v1-cu121`, `v1-cu126`, `v1-cu129` | 5.0 GB, 5.6 GB, 5.9 GB |
+| `code-server` | Browser-based VS Code workspace | `v2` | 180 MB |
+| `pytorch-jupyter` | PyTorch, JupyterLab, TensorBoard, code-server | `v2-cu121`, `v2-cu126`, `v2-cu129` | 4.3 GB, 4.8 GB, 5.0 GB |
+| `tensorflow-jupyter` | TensorFlow, JupyterLab, TensorBoard, code-server | `v2-cu125` | 4.2 GB |
+| `scipy-jupyter` | CPU data-science and JupyterLab | `v2-py312` | 850 MB |
+| `pytorch-demo` | LabPod demonstration workspace | `v2-cpu`, `v2-cu121`, `v2-cu126`, `v2-cu129` | 2.2 GB, 4.4 GB, 4.9 GB, 5.1 GB |
+| `miniforge-jupyterlab` | conda-forge Python and JupyterLab | `v2-cpu` | 750 MB |
+| `uv-jupyterlab` | Lightweight uv/Python and JupyterLab | `v2-py312` | 420 MB |
+| `r-ml-jupyterlab` | R ML packages, IRkernel, and JupyterLab | `v2-cpu` | 2.4 GB |
+| `rstudio-server` | Rootless, proxy-authenticated RStudio Server | `v2-cpu` | 1.8 GB |
+| `llm-huggingface` | Hugging Face fine-tuning/inference stack | `v2-cu121`, `v2-cu126`, `v2-cu129` | 4.9 GB, 5.3 GB, 5.5 GB |
+| `comfyui-stable-diffusion` | ComfyUI without bundled model weights | `v2-cu121`, `v2-cu126`, `v2-cu129` | 4.8 GB, 5.2 GB, 5.4 GB |
+| `cuda-composite` | CUDA, JupyterLab, MLflow, Aim, code-server | `v2-cu121`, `v2-cu126`, `v2-cu129` | 2.1 GB, 2.5 GB, 2.7 GB |
+| `parallel-dev` | CUDA/MPI/OpenMP toolchain and OSS code-server | `v2-cu121`, `v2-cu126`, `v2-cu129` | 5.0 GB, 5.6 GB, 5.9 GB |
 
 Pull an image with Podman, for example:
 
 ```bash
-podman pull ghcr.io/labpod/pytorch-jupyter:v1-cu126
+podman pull ghcr.io/labpod/pytorch-jupyter:v2-cu126
 ```
 
 ## Tags and reproducibility
 
 Release tags are immutable. The workflow refuses to overwrite an existing
-`v1` tag; a source or dependency update must advance the release prefix. Tag
+`v2` tag; a source or dependency update must advance the release prefix. Tag
 suffixes such as `cu121`, `cu126`, `cu129`, `cu125`, `py312`, and `cpu`
 describe runtime compatibility. Weekly rebuilds publish unique, immutable
 `rebuild-<date>-<run>-<attempt>-<release-tag>` audit tags and smoke those bytes
@@ -65,7 +65,7 @@ Changes on `main` first publish commit-specific `candidate-<sha>-<tag>` tags for
 the affected variants. CI then pulls those candidates anonymously, checks the
 runtime image contract as an unprivileged workspace identity with writable
 `HOME` and `/work`, exercises the installed Python stack, and probes the
-JupyterLab, TensorBoard, code-server, and ttyd HTTP launchers that apply to that
+JupyterLab, TensorBoard, and code-server HTTP launchers that apply to that
 image. Stable tags are promoted only after the complete affected candidate
 matrix passes. CI pulls and smokes every promoted stable tag again without
 registry credentials. The weekly schedule and manual dispatch run the complete

@@ -1,6 +1,6 @@
 # LabPod code-server workspace image (public, pull-only).
 #
-# Built and pushed to the immutable ghcr.io/labpod/code-server:v1 tag by
+# Built and pushed to the immutable ghcr.io/labpod/code-server:v2 tag by
 # .github/workflows/images.yml. This is LabPod's managed
 # Code Server template image, not coder/code-server:latest.
 FROM docker.io/ubuntu:24.04

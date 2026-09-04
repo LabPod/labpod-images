@@ -3,7 +3,7 @@
 # Built and pushed to ghcr.io/labpod/pytorch-demo:<tag> by
 # .github/workflows/images.yml. Backs LabPod's
 # "PyTorch Demo Workspace" template: a kitchen-sink showcase with
-# JupyterLab, TensorBoard, code-server, ttyd terminal, MLflow, and Aim.
+# JupyterLab, TensorBoard, code-server, MLflow, and Aim.
 # No baked USER (runs as the workspace owner under rootless Podman),
 # WORKDIR /work.
 #
@@ -50,7 +50,6 @@ RUN apt-get update \
         rsync \
         tmux \
         tree \
-        ttyd \
         unzip \
         vim \
         wget \
@@ -96,17 +95,16 @@ RUN arch="$(dpkg --print-architecture)" \
     && rm -rf /var/lib/apt/lists/*
 
 # Build-time contract checks run for every CPU/CUDA matrix entry. Published
-# image smoke tests additionally probe JupyterLab, TensorBoard, code-server,
-# and ttyd over HTTP.
+# image smoke tests additionally probe JupyterLab, TensorBoard, and code-server
+# over HTTP.
 RUN PYTHONDONTWRITEBYTECODE=1 python3 -c \
       'import aim, mlflow, torch, torchvision; x=torch.tensor([1.0, 2.0]); assert torch.dot(x, x).item() == 5.0' \
     && jupyter lab --version \
     && tensorboard --version \
-    && code-server --version \
-    && ttyd --version
+    && code-server --version
 
 WORKDIR /work
-EXPOSE 8888 6006 8080 7681 5000 43800
+EXPOSE 8888 6006 8080 5000 43800
 
 # Stay-alive composite: launchers start on demand via `podman exec`.
 # Zombie reaping is handled by catatonit from LabPod's `podman run --init`,

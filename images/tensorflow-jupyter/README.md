@@ -11,7 +11,7 @@ The GitHub Actions workflow publishes Linux `amd64` images to
 
 | Image tag | CUDA runtime base | Minimum Linux host driver | Python | TensorFlow | GPU architecture |
 | --- | --- | --- | --- | --- | --- |
-| `v1-cu125` | CUDA 12.5.1 on Ubuntu 24.04 | >= 525.60.13 | 3.12 | 2.21.0 (`tensorflow[and-cuda]`, CUDA 12.5+ / cuDNN 9.3) | Pascal (`sm_60`) and newer |
+| `v2-cu125` | CUDA 12.5.1 on Ubuntu 24.04 | >= 525.60.13 | 3.12 | 2.21.0 (`tensorflow[and-cuda]`, CUDA 12.5+ / cuDNN 9.3) | Pascal (`sm_60`) and newer |
 
 Unlike the PyTorch image, TensorFlow's `and-cuda` extra bundles its own CUDA
 user-space through pip `nvidia-*` wheels. The effective CUDA runtime is
