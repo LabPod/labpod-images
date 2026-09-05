@@ -31,6 +31,15 @@ class NewRecipeContractTest(unittest.TestCase):
             with self.subTest(path=path.relative_to(ROOT)):
                 self.assertNotIn("ttyd", path.read_text().lower())
 
+    def test_pytorch_demo_description_does_not_advertise_retired_terminal(self):
+        text = dockerfile("pytorch-demo")
+        description = next(
+            line
+            for line in text.splitlines()
+            if "org.opencontainers.image.description" in line
+        )
+        self.assertNotIn("terminal", description.lower())
+
     def test_rstudio_installs_and_load_checks_advertised_packages(self):
         text = dockerfile("rstudio-server")
         for package in ("tidyverse", "data.table", "reticulate"):

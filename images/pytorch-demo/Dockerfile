@@ -21,7 +21,7 @@
 ARG CUDA_BASE_IMAGE=docker.io/ubuntu:24.04
 FROM ${CUDA_BASE_IMAGE}
 
-LABEL org.opencontainers.image.description="LabPod PyTorch Demo workspace image with JupyterLab, TensorBoard, code-server, terminal, MLflow, and Aim."
+LABEL org.opencontainers.image.description="LabPod PyTorch Demo workspace image with JupyterLab, TensorBoard, code-server, MLflow, and Aim."
 
 ENV DEBIAN_FRONTEND=noninteractive \
     VIRTUAL_ENV=/opt/venv \
