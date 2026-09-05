@@ -73,6 +73,9 @@ done
 # shellcheck disable=SC2016 # HOME must expand inside the container.
 "$engine" exec "$container_id" sh -c 'test -w "$HOME" && test -w /work' \
   || fail "workspace identity cannot write HOME and /work"
+if "$engine" exec "$container_id" sh -c 'command -v ttyd >/dev/null 2>&1'; then
+  fail "image still ships ttyd"
+fi
 
 probe_http() {
   local name=$1

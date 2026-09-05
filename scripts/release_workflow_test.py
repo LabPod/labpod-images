@@ -217,6 +217,11 @@ class ReleaseWorkflowTest(unittest.TestCase):
         self.assertIn('--tmpfs /work:rw,mode=1777', smoke)
         self.assertIn('test -w "$HOME" && test -w /work', smoke)
 
+    def test_runtime_smoke_rejects_retired_ttyd_binary(self):
+        smoke = (ROOT / "scripts" / "smoke-image.sh").read_text()
+        self.assertIn("command -v ttyd", smoke)
+        self.assertIn("image still ships ttyd", smoke)
+
     def test_parallel_dev_uses_redistributable_code_server(self):
         dockerfile = (ROOT / "images" / "parallel-dev" / "Dockerfile").read_text()
         self.assertIn("code-server", dockerfile)
