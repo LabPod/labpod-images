@@ -4,6 +4,7 @@
 import argparse
 import json
 import re
+import subprocess
 from pathlib import Path, PurePosixPath
 
 
@@ -53,14 +54,14 @@ def release_prefix(variants):
             raise ValueError(f"invalid immutable release tag: {variant['tag']}")
         prefixes.add(match.group(1))
     if len(prefixes) != 1:
-        raise ValueError("image matrix must use one shared vN release prefix")
+        raise ValueError("image matrix must use one shared vN release prefix per family")
     return prefixes.pop()
 
 
 def package_current_tag(name, variants):
     if name not in PACKAGE_DEFAULT_SUFFIX:
         raise ValueError(f"image matrix lacks default-tag metadata for: {name}")
-    prefix = release_prefix(variants)
+    prefix = release_prefix([item for item in variants if item["name"] == name])
     suffix = PACKAGE_DEFAULT_SUFFIX[name]
     tag = prefix if not suffix else f"{prefix}-{suffix}"
     if not any(item["name"] == name and item["tag"] == tag for item in variants):
@@ -79,7 +80,8 @@ def load_variants(catalog=CATALOG):
             "image matrix lacks default-tag metadata for: "
             + ", ".join(sorted(unknown_packages))
         )
-    release_prefix(variants)
+    for name in dict.fromkeys(item["name"] for item in variants):
+        release_prefix([item for item in variants if item["name"] == name])
     return variants
 
 
@@ -180,13 +182,7 @@ def select_variant_names(paths, variants, force_all=False):
     return [name for name in ordered_names if name in selected]
 
 
-def release_scope(
-    paths=(), force_all=False, force_all_if_changed=False, catalog=CATALOG
-):
-    variants = load_variants(catalog)
-    names = select_variant_names(paths, variants, force_all=force_all)
-    if force_all_if_changed and names:
-        names = select_variant_names((), variants, force_all=True)
+def scope_for_names(names, variants):
     selected = [variant for variant in variants if variant["name"] in names]
     variant_matrix = {"include": [workflow_variant(item) for item in selected]}
     package_matrix = {
@@ -206,25 +202,86 @@ def release_scope(
     }
 
 
+def release_scope(paths=(), force_all=False, catalog=CATALOG):
+    variants = load_variants(catalog)
+    names = select_variant_names(paths, variants, force_all=force_all)
+    return scope_for_names(names, variants)
+
+
+def metadata_by_name(metadata):
+    images = metadata["images"]
+    indexed = {item["name"]: item for item in images}
+    if len(indexed) != len(images):
+        raise ValueError("published metadata contains duplicate image families")
+    return indexed
+
+
+def published_refs(image):
+    published = image["published"]
+    return [item["ref"] for item in [published, *published.get("variants", [])]]
+
+
+def publication_scope(previous_metadata, catalog=CATALOG, metadata=None):
+    """Publish only changed family definitions, never overwrite an existing vN.
+
+    The canonical metadata is checked by repository tests. Comparing its actual
+    contents avoids rebuilding unrelated families when a generator or workflow
+    changes, or when only one family's entries in a shared JSON file change.
+    Weekly/manual audits still explicitly select --all and use unique audit tags.
+    """
+    variants = load_variants(catalog)
+    names = list(dict.fromkeys(item["name"] for item in variants))
+    if metadata is None:
+        metadata = json.loads((ROOT / "published-images.json").read_text())
+    current = metadata_by_name(metadata)
+    previous = metadata_by_name(previous_metadata)
+    if set(current) != set(names):
+        raise ValueError("published metadata families do not match the image matrix")
+    selected = []
+    for name in names:
+        expected_refs = {
+            f"ghcr.io/labpod/{name}:{item['tag']}"
+            for item in variants if item["name"] == name
+        }
+        if set(published_refs(current[name])) != expected_refs:
+            raise ValueError(f"published metadata refs do not match the image matrix: {name}")
+        if current[name] == previous.get(name):
+            continue
+        if name in previous:
+            old_prefix = release_prefix([
+                {"tag": ref.rsplit(":", 1)[1]} for ref in published_refs(previous[name])
+            ])
+            new_prefix = release_prefix([item for item in variants if item["name"] == name])
+            if int(new_prefix[1:]) <= int(old_prefix[1:]):
+                raise ValueError(f"advance the immutable release version for changed family: {name}")
+        selected.append(name)
+    return scope_for_names(selected, variants)
+
+
+def base_metadata(commit):
+    if not re.fullmatch(r"[0-9a-fA-F]{40}", commit):
+        raise ValueError("publication base must be a full commit SHA")
+    return json.loads(subprocess.check_output(
+        ["git", "show", f"{commit}:published-images.json"], cwd=ROOT, text=True
+    ))
+
+
 def main():
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--all", action="store_true", help="select every variant")
     group.add_argument("--paths-file", type=Path, help="newline-delimited changed paths")
     group.add_argument(
-        "--all-if-paths-file",
-        type=Path,
-        help="select every variant when the changed paths affect a release",
+        "--publish-changes-from",
+        help="publish only families changed since this full commit SHA",
     )
     args = parser.parse_args()
 
-    paths_file = args.paths_file or args.all_if_paths_file
-    paths = () if args.all else paths_file.read_text().splitlines()
-    scope = release_scope(
-        paths,
-        force_all=args.all,
-        force_all_if_changed=args.all_if_paths_file is not None,
-    )
+    if args.publish_changes_from:
+        scope = publication_scope(base_metadata(args.publish_changes_from))
+    else:
+        paths = () if args.all else args.paths_file.read_text().splitlines()
+        scope = release_scope(paths, force_all=args.all)
     print(f"release_required={scope['release_required']}")
     print("variant_matrix=" + json.dumps(scope["variant_matrix"], separators=(",", ":")))
     print("package_matrix=" + json.dumps(scope["package_matrix"], separators=(",", ":")))

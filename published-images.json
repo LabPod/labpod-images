@@ -259,29 +259,29 @@
         "TORCH_VERSION": "2.8.0"
       },
       "variant_build_args": {
-        "v2-cu121": {
+        "v3-cu121": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04",
           "TORCH_CUDA": "cu121",
           "TORCH_VERSION": "2.5.1"
         },
-        "v2-cu126": {
+        "v3-cu126": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.6.3-runtime-ubuntu24.04",
           "TORCH_CUDA": "cu126",
           "TORCH_VERSION": "2.8.0"
         },
-        "v2-cu129": {
+        "v3-cu129": {
           "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04",
           "TORCH_CUDA": "cu129",
           "TORCH_VERSION": "2.8.0"
         }
       },
       "published": {
-        "ref": "ghcr.io/labpod/llm-huggingface:v2-cu126",
-        "definition_digest": "sha256:75818d36f7bd227fa3e7ace5a878853f025d7ae4a5cf7658a1d25b3bbda1fcc6",
+        "ref": "ghcr.io/labpod/llm-huggingface:v3-cu126",
+        "definition_digest": "sha256:25ef922b7f2db0f0a10fe18c90e0b8101f093e99bd0fcedb6e586d608fccc07e",
         "variants": [
           {
-            "ref": "ghcr.io/labpod/llm-huggingface:v2-cu121",
-            "definition_digest": "sha256:1681725d465b0b77bfce3537b0fcc35f06428c3efc766398c735946c5d22eea3",
+            "ref": "ghcr.io/labpod/llm-huggingface:v3-cu121",
+            "definition_digest": "sha256:08b535dfa1bad449bcaadb469d5585a342662ae4b4a121e0f72863acf7a82026",
             "build_args": {
               "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04",
               "TORCH_CUDA": "cu121",
@@ -289,8 +289,8 @@
             }
           },
           {
-            "ref": "ghcr.io/labpod/llm-huggingface:v2-cu129",
-            "definition_digest": "sha256:5e53ec4f562bc1f8ec41a0043626de0a89a05aa34516b3010c93cbb310892e34",
+            "ref": "ghcr.io/labpod/llm-huggingface:v3-cu129",
+            "definition_digest": "sha256:7574df0f28eea0fb852b52b10a8508819f58792e352163102ada21af8a7ead9b",
             "build_args": {
               "CUDA_BASE_IMAGE": "docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04",
               "TORCH_CUDA": "cu129",

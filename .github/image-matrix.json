@@ -94,21 +94,21 @@
     },
     {
       "name": "llm-huggingface",
-      "tag": "v2-cu121",
+      "tag": "v3-cu121",
       "base": "docker.io/nvidia/cuda:12.1.1-runtime-ubuntu22.04",
       "torch_cuda": "cu121",
       "torch": "2.5.1"
     },
     {
       "name": "llm-huggingface",
-      "tag": "v2-cu126",
+      "tag": "v3-cu126",
       "base": "docker.io/nvidia/cuda:12.6.3-runtime-ubuntu24.04",
       "torch_cuda": "cu126",
       "torch": "2.8.0"
     },
     {
       "name": "llm-huggingface",
-      "tag": "v2-cu129",
+      "tag": "v3-cu129",
       "base": "docker.io/nvidia/cuda:12.9.1-runtime-ubuntu24.04",
       "torch_cuda": "cu129",
       "torch": "2.8.0"
