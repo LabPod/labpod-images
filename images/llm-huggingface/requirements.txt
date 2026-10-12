@@ -1,0 +1,10 @@
+# Tested together against the legacy Torch 2.5.1 CUDA 12.1 boundary.
+# Transformers 5.19.0 breaks model imports on Torch 2.5:
+# https://github.com/huggingface/transformers/issues/49380
+# Requalify this cohort on every supported Python/Torch pair before changing it.
+transformers==5.18.0
+peft==0.21.2
+# 1.15.0 requires Python 3.11; Ubuntu 22.04 supplies Python 3.10.
+trl==1.14.2
+accelerate==1.15.0
+bitsandbytes==0.50.2

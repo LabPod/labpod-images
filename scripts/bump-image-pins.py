@@ -47,6 +47,7 @@ CODE_SERVER_DOCKERFILES = [
 ]
 
 _STABLE_RE = re.compile(r"^\d+(\.\d+)*$")
+_RELEASE_TAG_RE = re.compile(r"v(\d+)((?:-[A-Za-z0-9_][A-Za-z0-9_.-]*)?)")
 
 
 def version_key(v):
@@ -121,31 +122,83 @@ def update_code_server_dockerfile(text, version, sha_amd64, sha_arm64):
     return re.sub(r"(CODE_SERVER_SHA256_ARM64=)[0-9a-f]{64}", rf"\g<1>{sha_arm64}", text)
 
 
-def advance_release_tags(text):
-    """Advance the shared immutable vN prefix while preserving channels."""
-    versions = {int(value) for value in re.findall(r'"tag"\s*:\s*"v(\d+)(?:-[^"]+)?"', text)}
-    if len(versions) != 1:
-        raise ValueError("release catalog must use one shared vN tag prefix")
-    old_version = versions.pop()
-    new_version = old_version + 1
-    updated = re.sub(
-        rf'("tag"\s*:\s*")v{old_version}((?:-[^"]+)?")',
-        rf"\g<1>v{new_version}\g<2>",
-        text,
-    )
-    return updated, old_version, new_version
+def release_versions(catalog):
+    """Validate immutable tags and return each image family's vN version."""
+    prefixes = {}
+    for variant in catalog["variants"]:
+        tag = variant.get("tag")
+        match = _RELEASE_TAG_RE.fullmatch(tag) if isinstance(tag, str) else None
+        if not match:
+            raise ValueError(f"invalid immutable release tag: {tag}")
+        name = variant["name"]
+        prefix = match.group(1)
+        if name in prefixes and prefixes[name] != prefix:
+            raise ValueError(f"image family {name} must use one shared vN tag prefix")
+        prefixes[name] = prefix
+    if not prefixes:
+        raise ValueError("release catalog must contain image variants")
+    return {name: int(prefix) for name, prefix in prefixes.items()}
 
 
-def finalize_pin_changes(changes, image_matrix=IMAGE_MATRIX, root=ROOT):
-    """Advance immutable tags and refresh the generated bundle handoff."""
-    if not changes:
+def advance_release_tags(text, changed_families):
+    """Advance only changed families' immutable vN prefixes; retain channels."""
+    catalog = json.loads(text)
+    versions = release_versions(catalog)
+    changed_families = set(changed_families)
+    unknown = changed_families - versions.keys()
+    if unknown:
+        raise ValueError("changed image families absent from catalog: " + ", ".join(sorted(unknown)))
+    releases = {
+        name: (version, version + 1)
+        for name, version in versions.items()
+        if name in changed_families
+    }
+    if not releases:
+        return text, releases
+    for variant in catalog["variants"]:
+        if variant["name"] in releases:
+            suffix = _RELEASE_TAG_RE.fullmatch(variant["tag"]).group(2)
+            variant["tag"] = f"v{releases[variant['name']][1]}{suffix}"
+    return json.dumps(catalog, indent=2) + "\n", releases
+
+
+def snapshot_pin_inputs(
+    image_matrix=IMAGE_MATRIX, dockerfiles=CODE_SERVER_DOCKERFILES, root=ROOT
+):
+    """Capture the inputs this tool can change, grouped by image family.
+
+    Snapshot the working files rather than a Git revision so unrelated existing
+    edits cannot cause a release bump. Tags themselves are not build inputs.
+    """
+    catalog = json.loads(image_matrix.read_text())
+    release_versions(catalog)
+    inputs = {}
+    for variant in catalog["variants"]:
+        family = inputs.setdefault(variant["name"], {"variants": [], "dockerfiles": {}})
+        family["variants"].append({key: value for key, value in variant.items() if key != "tag"})
+    for path in dockerfiles:
+        family = inputs.setdefault(path.parent.name, {"variants": [], "dockerfiles": {}})
+        family["dockerfiles"][path.relative_to(root).as_posix()] = path.read_bytes()
+    return inputs
+
+
+def finalize_pin_changes(
+    changes, before, image_matrix=IMAGE_MATRIX, dockerfiles=CODE_SERVER_DOCKERFILES, root=ROOT
+):
+    """Advance materially changed families and refresh the bundle handoff."""
+    after = snapshot_pin_inputs(image_matrix, dockerfiles, root)
+    changed_families = {
+        name for name in before.keys() | after.keys() if before.get(name) != after.get(name)
+    }
+    if not changed_families:
         return
-    matrix, old_release, new_release = advance_release_tags(image_matrix.read_text())
+    matrix, releases = advance_release_tags(image_matrix.read_text(), changed_families)
     image_matrix.write_text(matrix)
-    changes.append(
-        f"release tags v{old_release} -> v{new_release} "
-        f"({image_matrix.relative_to(root).as_posix()})"
-    )
+    for name, (old_release, new_release) in releases.items():
+        changes.append(
+            f"{name} release tags v{old_release} -> v{new_release} "
+            f"({image_matrix.relative_to(root).as_posix()})"
+        )
     subprocess.run(
         [sys.executable, str(root / "scripts" / "published-metadata.py"), "--write"],
         cwd=root,
@@ -156,6 +209,7 @@ def finalize_pin_changes(changes, image_matrix=IMAGE_MATRIX, root=ROOT):
 
 def main():
     changes = []
+    before = snapshot_pin_inputs()
 
     # torch / torchvision (newest shared pin only; cu121 stays put).
     cur_torch = newest_pinned(PYTORCH_WFS, "torch")
@@ -220,9 +274,9 @@ def main():
                 rel = path.relative_to(ROOT).as_posix()
                 changes.append(f"code-server {cur_cs} -> {new_cs} ({rel}, sha256 recomputed)")
 
-    # A pin update changes build bytes. Advance the immutable release prefix
-    # and regenerate the bundle handoff in the same PR.
-    finalize_pin_changes(changes)
+    # A pin update changes build bytes. Advance only the affected families'
+    # immutable release prefixes and regenerate the bundle handoff in this PR.
+    finalize_pin_changes(changes, before)
 
     summary = "\n".join(f"- {c}" for c in changes)
     print(summary if changes else "No pin updates available.")

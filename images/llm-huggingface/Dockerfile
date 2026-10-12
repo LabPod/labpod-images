@@ -32,10 +32,23 @@ RUN uv pip install --python "$VIRTUAL_ENV/bin/python" --no-cache \
         --index-url "https://download.pytorch.org/whl/${TORCH_CUDA}" \
         "torch==${TORCH_VERSION}"
 
+COPY requirements.txt /tmp/huggingface-requirements.txt
+# Keep the tested HF cohort together and preserve the exact installed CUDA wheel
+# during the second resolution; incompatible future requirements must fail closed.
 RUN uv pip install --python "$VIRTUAL_ENV/bin/python" --no-cache \
-        jupyterlab ipywidgets jupyter-resource-usage tensorboard transformers \
-        datasets accelerate peft trl bitsandbytes sentencepiece safetensors \
+        "torch==${TORCH_VERSION}+${TORCH_CUDA}" \
+        -r /tmp/huggingface-requirements.txt \
+        jupyterlab ipywidgets jupyter-resource-usage tensorboard \
+        datasets sentencepiece safetensors \
         huggingface_hub hf-transfer einops evaluate numpy pandas
+
+COPY runtime-smoke.py /usr/local/lib/labpod/huggingface-smoke.py
+# Exercise lazy generation/trainer imports and a tiny model without downloading
+# weights or requiring a GPU. Import failures must fail the build, not a release.
+RUN HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
+    OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 \
+    EXPECTED_TORCH_VERSION="${TORCH_VERSION}" EXPECTED_TORCH_CUDA="${TORCH_CUDA}" \
+    python /usr/local/lib/labpod/huggingface-smoke.py
 
 RUN arch="$(dpkg --print-architecture)" \
     && case "$arch" in \

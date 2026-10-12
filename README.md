@@ -9,7 +9,7 @@ kept solely for compatibility with older server releases are not retained.
 ## Images
 
 Pull sizes below are approximate compressed transfer sizes for Linux amd64.
-They are capacity-planning estimates for the current `v2` catalog; registry
+They are capacity-planning estimates for the current catalog; registry
 package pages are authoritative once the workflow has published the images.
 
 | Image | Purpose | Immutable tag(s) | Approx. pull size per tag |
@@ -23,7 +23,7 @@ package pages are authoritative once the workflow has published the images.
 | `uv-jupyterlab` | Lightweight uv/Python and JupyterLab | `v2-py312` | 420 MB |
 | `r-ml-jupyterlab` | R ML packages, IRkernel, and JupyterLab | `v2-cpu` | 2.4 GB |
 | `rstudio-server` | Rootless, proxy-authenticated RStudio Server | `v2-cpu` | 1.8 GB |
-| `llm-huggingface` | Hugging Face fine-tuning/inference stack | `v2-cu121`, `v2-cu126`, `v2-cu129` | 4.9 GB, 5.3 GB, 5.5 GB |
+| `llm-huggingface` | Hugging Face fine-tuning/inference stack | `v3-cu121`, `v3-cu126`, `v3-cu129` | 4.9 GB, 5.3 GB, 5.5 GB |
 | `comfyui-stable-diffusion` | ComfyUI without bundled model weights | `v2-cu121`, `v2-cu126`, `v2-cu129` | 4.8 GB, 5.2 GB, 5.4 GB |
 | `cuda-composite` | CUDA, JupyterLab, MLflow, Aim, code-server | `v2-cu121`, `v2-cu126`, `v2-cu129` | 2.1 GB, 2.5 GB, 2.7 GB |
 | `parallel-dev` | CUDA/MPI/OpenMP toolchain and OSS code-server | `v2-cu121`, `v2-cu126`, `v2-cu129` | 5.0 GB, 5.6 GB, 5.9 GB |
@@ -37,7 +37,10 @@ podman pull ghcr.io/labpod/pytorch-jupyter:v2-cu126
 ## Tags and reproducibility
 
 Release tags are immutable. The workflow refuses to overwrite an existing
-`v2` tag; a source or dependency update must advance the release prefix. Tag
+release tag; a source or dependency update must advance that image family's
+release prefix. Families version independently: Hugging Face is `v3` while
+unchanged families remain `v2`. All CUDA channels within one family share its
+prefix because they share a Dockerfile and build context. Tag
 suffixes such as `cu121`, `cu126`, `cu129`, `cu125`, `py312`, and `cpu`
 describe runtime compatibility. Weekly rebuilds publish unique, immutable
 `rebuild-<date>-<run>-<attempt>-<release-tag>` audit tags and smoke those bytes
@@ -52,14 +55,18 @@ README for its supported matrix.
 Each image lives under `images/<name>` with its own Dockerfile and compatibility
 notes. Pull requests build only the affected image's Linux `amd64` variants
 without publishing them; the Dockerfiles run import and command checks as part
-of those builds. Changes to the shared release catalog, workflow, or smoke
-contract validate the complete matrix.
+of those builds. PRs and main pushes use the same metadata comparison to select
+changed families. Shared workflow and smoke-contract changes are checked by
+repository tests; scheduled or explicitly requested audits validate the full
+image matrix without republishing unchanged immutable tags.
 
-Every release-affecting push to `main` builds the complete catalog. All refs
-share one immutable `vN` prefix and one generated metadata handoff, so publishing
-only a subset could leave that catalog internally inconsistent after a failed
-or interrupted release. Affected-only selection remains a pull-request
-optimization.
+Pushes to `main` compare the generated metadata with the previous commit and
+build only changed image families. Editing the shared catalog JSON or workflow
+does not itself republish unchanged families. Every changed family must advance
+its immutable `vN` prefix; the selector fails before building if it does not.
+All selected variants must pass before any selected variant is promoted. A
+Hugging Face-only change therefore builds its three CUDA variants, leaving
+other image families and their existing tags untouched.
 
 Changes on `main` first publish commit-specific `candidate-<sha>-<tag>` tags for
 the affected variants. CI then pulls those candidates anonymously, checks the
@@ -77,7 +84,10 @@ manifest. CI still refuses to move a stable tag that points at different bytes.
 Ordinary manual dispatch remains an audit rebuild and never moves stable tags.
 If validation fails before any promotion can start, maintainers can rerun the
 workflow with **Promote stable** enabled after merging the fix; that explicit
-recovery mode rebuilds, validates, and promotes the complete catalog.
+recovery mode rebuilds, validates, and attempts promotion of the complete
+catalog. It still refuses to replace any existing immutable tag with different
+bytes; it is not an overwrite mechanism. Scheduled and ordinary manual audits
+continue to build all 26 variants under unique audit tags without promotion.
 
 The release workflow stamps `org.opencontainers.image.source` on every image so
 GHCR can associate every organization-scoped package with this repository.
@@ -125,7 +135,8 @@ package Public and rerun the workflow; only then can candidate builds proceed.
 Version pins embedded in the build matrix are handled by the `bump-image-pins`
 workflow. It is optional and no-ops unless the repository secret
 `BUMP_PIN_TOKEN` has contents and pull-request write access to this repository.
-The bump script advances the shared immutable `vN` prefix and regenerates
+The bump script advances only families whose material pins changed, keeps a
+shared prefix across that family's CUDA channels, and regenerates
 `published-images.json` in the same pull request.
 Dependabot continues to maintain action and base-image pins without that
 secret.
@@ -136,3 +147,9 @@ These packages are maintained independently from the LabPod server release
 channel. LabPod server releases, portable CLI binaries, and the matching agent
 skill are published at [LabPod releases](https://github.com/LabPod/labpod/releases).
 Product documentation is available at [docs.labpod.ai](https://docs.labpod.ai).
+
+Publishing a new image version does not update a running LabPod server's
+embedded template catalog. A separate server catalog update must copy the
+matching Dockerfile/context and generated refs/digests, and verify that those
+immutable tags are live. Existing templates pinned to `v2` keep using `v2`;
+this repository does not add or rely on a floating `latest` tag.

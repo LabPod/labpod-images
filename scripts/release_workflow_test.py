@@ -39,7 +39,7 @@ EXPECTED_VARIANTS.update(
     }
 )
 EXPECTED_VARIANTS.update(
-    (name, f"v2-{channel}")
+    (name, f"{'v3' if name == 'llm-huggingface' else 'v2'}-{channel}")
     for name in (
         "llm-huggingface",
         "comfyui-stable-diffusion",
@@ -72,8 +72,8 @@ class ReleaseWorkflowTest(unittest.TestCase):
         self.assertIn(
             "fromJSON(needs.changes.outputs.package_matrix)", self.workflow
         )
-        self.assertIn("scripts/release-matrix.py --paths-file", self.workflow)
-        self.assertIn("scripts/release-matrix.py --all-if-paths-file", self.workflow)
+        self.assertIn('scripts/release-matrix.py --publish-changes-from "$base_sha"', self.workflow)
+        self.assertNotIn("--all-if-paths-file", self.workflow)
         self.assertIn("scripts/release-matrix.py --all", self.workflow)
         for old_name in (
             "build-code-server-image.yml",
@@ -83,6 +83,12 @@ class ReleaseWorkflowTest(unittest.TestCase):
             "build-tensorflow-images.yml",
         ):
             self.assertFalse((WORKFLOW.parent / old_name).exists(), old_name)
+
+    def test_pr_and_push_select_the_same_changed_release_families(self):
+        changes = self.workflow.split("\n  changes:\n", 1)[1].split("\n  package-access:\n", 1)[0]
+        self.assertNotIn("--paths-file", changes)
+        self.assertEqual(changes.count('--publish-changes-from "$base_sha"'), 1)
+        self.assertIn('base_sha=$PR_BASE_SHA', changes)
 
     def test_promotion_waits_for_complete_validation(self):
         self.assertIn("needs: [changes, validate_release]", self.promote_section)

@@ -56,12 +56,10 @@ jobs:
             exit 0
           fi
 
-          git diff --name-only "$base_sha" "$GITHUB_SHA" > /tmp/changed-files
-          if [[ "$EVENT_NAME" == pull_request ]]; then
-            python3 scripts/release-matrix.py --paths-file /tmp/changed-files >>"$GITHUB_OUTPUT"
-          else
-            python3 scripts/release-matrix.py --all-if-paths-file /tmp/changed-files >>"$GITHUB_OUTPUT"
-          fi
+          # Both PR validation and main publication use the changed families,
+          # not every entry in the shared metadata file. Unchanged immutable
+          # tags must never become new release candidates.
+          python3 scripts/release-matrix.py --publish-changes-from "$base_sha" >>"$GITHUB_OUTPUT"
 
   package-access:
     name: package access (${{ matrix.name }})

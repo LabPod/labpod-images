@@ -1,4 +1,5 @@
 import importlib.util
+import copy
 import json
 import tempfile
 import unittest
@@ -54,17 +55,44 @@ class ReleaseMatrixTest(unittest.TestCase):
             self.package_names(scope), ["code-server", "tensorflow-jupyter"]
         )
 
-    def test_main_release_change_expands_to_the_atomic_full_catalog(self):
-        scope = MODULE.release_scope(
-            ["images/code-server/Dockerfile"], force_all_if_changed=True
-        )
-        self.assertEqual(len(self.names_and_tags(scope)), 26)
-        self.assertEqual(len(self.package_names(scope)), 13)
+    def test_main_publication_selects_only_changed_family(self):
+        current = json.loads((MODULE.ROOT / "published-images.json").read_text())
+        previous = copy.deepcopy(current)
+        hf = next(item for item in previous["images"] if item["name"] == "llm-huggingface")
+        for artifact in [hf["published"], *hf["published"]["variants"]]:
+            artifact["ref"] = artifact["ref"].replace(":v3-", ":v2-")
+            artifact["definition_digest"] = "sha256:" + "0" * 64
+        scope = MODULE.publication_scope(previous)
+        self.assertEqual(self.package_names(scope), ["llm-huggingface"])
+        self.assertEqual(self.names_and_tags(scope), [
+            ("llm-huggingface", "v3-cu121"),
+            ("llm-huggingface", "v3-cu126"),
+            ("llm-huggingface", "v3-cu129"),
+        ])
 
-        docs_only = MODULE.release_scope(
-            ["images/code-server/README.md"], force_all_if_changed=True
-        )
-        self.assertEqual(docs_only["release_required"], "false")
+    def test_unchanged_metadata_never_republishes_existing_images(self):
+        current = json.loads((MODULE.ROOT / "published-images.json").read_text())
+        scope = MODULE.publication_scope(current)
+        self.assertEqual(scope["release_required"], "false")
+        self.assertEqual(self.names_and_tags(scope), [])
+
+    def test_changed_bytes_require_a_new_immutable_family_version(self):
+        previous = json.loads((MODULE.ROOT / "published-images.json").read_text())
+        previous["images"][0]["published"]["definition_digest"] = "sha256:" + "0" * 64
+        with self.assertRaisesRegex(ValueError, "advance.*code-server"):
+            MODULE.publication_scope(previous)
+
+    def test_family_versions_are_independent_but_channels_share_a_version(self):
+        variants = MODULE.load_variants()
+        self.assertEqual(MODULE.package_current_tag("llm-huggingface", variants), "v3-cu126")
+        self.assertEqual(MODULE.package_current_tag("pytorch-jupyter", variants), "v2-cu126")
+        with tempfile.TemporaryDirectory() as directory:
+            catalog = Path(directory) / "matrix.json"
+            changed = copy.deepcopy(variants)
+            next(item for item in changed if item["name"] == "llm-huggingface")["tag"] = "v4-cu121"
+            catalog.write_text(json.dumps({"variants": changed}))
+            with self.assertRaisesRegex(ValueError, "shared vN.*family"):
+                MODULE.load_variants(catalog)
 
     def test_docs_and_test_changes_select_nothing(self):
         scope = MODULE.release_scope(
@@ -109,8 +137,9 @@ class ReleaseMatrixTest(unittest.TestCase):
         scope = MODULE.release_scope(force_all=True)
         tags = self.names_and_tags(scope)
         self.assertNotIn(("code-server", "latest"), tags)
-        for _, tag in tags:
-            self.assertTrue(tag == "v2" or tag.startswith("v2-"), tag)
+        for name, tag in tags:
+            version = "v3" if name == "llm-huggingface" else "v2"
+            self.assertTrue(tag == version or tag.startswith(version + "-"), tag)
 
         expected_new = {
             ("miniforge-jupyterlab", "v2-cpu"),
@@ -125,7 +154,7 @@ class ReleaseMatrixTest(unittest.TestCase):
             "parallel-dev",
         ):
             expected_new.update(
-                (name, f"v2-{channel}")
+                (name, f"{'v3' if name == 'llm-huggingface' else 'v2'}-{channel}")
                 for channel in ("cu121", "cu126", "cu129")
             )
         self.assertTrue(expected_new.issubset(set(tags)))

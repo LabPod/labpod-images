@@ -27,10 +27,11 @@ class PublishedMetadataTest(unittest.TestCase):
             "parallel-dev",
         ):
             published = by_name[name]["published"]
-            self.assertTrue(published["ref"].endswith(":v2-cu126"))
+            version = "v3" if name == "llm-huggingface" else "v2"
+            self.assertTrue(published["ref"].endswith(f":{version}-cu126"))
             self.assertEqual(
                 {item["ref"].rsplit(":", 1)[1] for item in published["variants"]},
-                {"v2-cu121", "v2-cu129"},
+                {f"{version}-cu121", f"{version}-cu129"},
             )
             for variant in published["variants"]:
                 tag = variant["ref"].rsplit(":", 1)[1]
