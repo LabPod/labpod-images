@@ -1,0 +1,73 @@
+name: PR19 build-tool smoke
+
+# One-off qualification authorized for PR19 only, not recurring image CI.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    if: github.event_name == 'pull_request' && github.event.pull_request.number == 19
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Prepare tiny offline image
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/pr19-smoke"
+          printf '#include <stdio.h>\nint main(void) { puts("labpod-buildx-smoke-ok"); return 0; }\n' > "$RUNNER_TEMP/pr19-smoke/hello.c"
+          gcc -static -Os -s -o "$RUNNER_TEMP/pr19-smoke/hello" "$RUNNER_TEMP/pr19-smoke/hello.c"
+          test "$("$RUNNER_TEMP/pr19-smoke/hello")" = labpod-buildx-smoke-ok
+          printf 'FROM scratch\nCOPY hello /hello\nRUN ["/hello"]\nENTRYPOINT ["/hello"]\n' > "$RUNNER_TEMP/pr19-smoke/Dockerfile"
+
+      - name: Set up Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Verify builder outputs
+        env:
+          BUILDER_NAME: ${{ steps.buildx.outputs.name }}
+          BUILDER_DRIVER: ${{ steps.buildx.outputs.driver }}
+          BUILDER_PLATFORMS: ${{ steps.buildx.outputs.platforms }}
+          BUILDER_NODES: ${{ steps.buildx.outputs.nodes }}
+        run: |
+          set -euo pipefail
+          python3 scripts/buildx-smoke.py builder
+          docker buildx inspect "$BUILDER_NAME" --bootstrap
+          test "$(docker buildx inspect --format '{{.Name}}')" = "$BUILDER_NAME"
+
+      - name: Build and load tiny image
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
+        with:
+          context: ${{ runner.temp }}/pr19-smoke
+          builder: ${{ steps.buildx.outputs.name }}
+          platforms: linux/amd64
+          network: none
+          push: false
+          load: true
+          provenance: false
+          sbom: false
+          tags: labpod-pr19-smoke:local
+
+      - name: Verify image execution and metadata
+        env:
+          IMAGE_ID: ${{ steps.build.outputs.imageid }}
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE_METADATA: ${{ steps.build.outputs.metadata }}
+        run: |
+          set -euo pipefail
+          test "$(docker run --pull never --network none --rm labpod-pr19-smoke:local)" = labpod-buildx-smoke-ok
+          LOADED_ID=$(docker image inspect --format '{{.Id}}' labpod-pr19-smoke:local)
+          export LOADED_ID
+          python3 scripts/buildx-smoke.py image
+      # Leave the builder intact: setup-buildx's default post step must remove it.
+      # Review its completed logs; cleanup warnings need attention even on green CI.
