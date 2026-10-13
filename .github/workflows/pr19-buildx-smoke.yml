@@ -40,7 +40,7 @@ jobs:
           set -euo pipefail
           python3 scripts/buildx-smoke.py builder
           docker buildx inspect "$BUILDER_NAME" --bootstrap
-          test "$(docker buildx inspect --format '{{.Name}}')" = "$BUILDER_NAME"
+          test "$(docker buildx inspect | awk '/^Name:/ && !seen {print $2; seen=1}')" = "$BUILDER_NAME"
 
       - name: Build and load tiny image
         id: build

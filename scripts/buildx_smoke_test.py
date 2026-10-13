@@ -48,6 +48,7 @@ class BuildxSmokeTest(unittest.TestCase):
         self.assertNotIn('workflow_dispatch', workflow)
         self.assertNotIn('schedule:', workflow)
         self.assertNotIn('cleanup: false', workflow)
+        self.assertNotIn('buildx inspect --format', workflow)
         for line in workflow.splitlines():
             if 'uses: docker/' in line:
                 self.assertIn(line.strip(), production)
