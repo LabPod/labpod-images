@@ -115,7 +115,7 @@ def dockerfile_heredocs(line):
 
 
 def logical_lines(text):
-    physical = iter(text.replace("\r\n", "\n").split("\n"))
+    physical = iter(text.replace("\r\n", "\n").removesuffix("\n").split("\n"))
     current = ""
     escape = "\\"
     continued = False
