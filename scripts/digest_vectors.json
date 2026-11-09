@@ -108,5 +108,68 @@
     "digest": "sha256:e1f2341e0cf3d206c01f05f27712312c9bb2ca9b144ca69da58ea95ef6c32ffa",
     "dockerfile": "FROM alpine:3.20\n",
     "name": "unused-build-arg-still-hashed"
+  },
+  {
+    "build_args": {},
+    "context": {},
+    "digest": "sha256:9a1815225dbcff11639d03987153758b16df62f06dff7b47bd5d15543369bb69",
+    "dockerfile": "FROM docker.io/library/alpine:3.20\nRUN cat <<'EOF' > /tmp/example.Dockerfile\nFROM docker.io/library/busybox:1.36\nEOF\n",
+    "name": "heredoc-quoted-from"
+  },
+  {
+    "build_args": {},
+    "context": {},
+    "digest": "sha256:f6e0fa58f97e023f071c21b70e6693d68e76412a2fbea586f8bf153ac05ee45e",
+    "dockerfile": "FROM docker.io/library/alpine:3.20 AS build\nRUN <<EOF\n EOF\nEOF \nEOFsuffix\n# escape=`\nFROM ${UNDECLARED} \\\nEOF\nFROM docker.io/library/busybox:1.36\nFROM build\n",
+    "name": "heredoc-unquoted-exact-terminator"
+  },
+  {
+    "build_args": {},
+    "context": {},
+    "digest": "sha256:8a97ddd572f8f1885c14e4ea36d519c68003c1397d6c6d98ada89acf9e2fdf0d",
+    "dockerfile": "FROM docker.io/library/alpine:3.20 AS build\nCOPY --chmod=0644 <<-EOF /message\n\tFROM docker.io/library/busybox:1.36\n\tEOF\nFROM docker.io/library/busybox:1.36\nFROM build\n",
+    "name": "heredoc-copy-strip-tabs"
+  },
+  {
+    "build_args": {},
+    "context": {},
+    "digest": "sha256:bb5b4dd5d5bbac4f3f448cd583449f19efceba49294b4e841669b918477f0b64",
+    "dockerfile": "FROM docker.io/library/alpine:3.20 AS build\nRUN cat 3<<FIRST && cat <<\"END HERE\"\nFROM docker.io/library/busybox:1.36\nFIRST\nFROM ${UNDECLARED}\nEND HERE\nFROM docker.io/library/busybox:1.36\nFROM build\n",
+    "name": "heredoc-multiple-quoted-space"
+  },
+  {
+    "build_args": {},
+    "context": {},
+    "digest": "sha256:5ea6c9a8b79b8e30830d2ad2d572032e4acdaac1e67ce7e24495614168d29958",
+    "dockerfile": "FROM docker.io/library/alpine:3.20 AS build\nRUN cat <<E\\OF\nFROM docker.io/library/busybox:1.36\nEOF\nFROM docker.io/library/busybox:1.36\nFROM build\n",
+    "name": "heredoc-escaped-delimiter"
+  },
+  {
+    "build_args": {},
+    "context": {},
+    "digest": "sha256:d4b61deb3afac8a344e4d683dc0aac5b023101b82810dd497b941d34ee67ee04",
+    "dockerfile": "FROM docker.io/library/alpine:3.20 AS build\nRUN cat \\\n# keep the opener continued\n\n  <<'EOF' > /tmp/example.Dockerfile\nFROM ${UNDECLARED}\nEOF\nFROM docker.io/library/busybox:1.36\nFROM build\n",
+    "name": "heredoc-continued-opener"
+  },
+  {
+    "build_args": {},
+    "context": {},
+    "digest": "sha256:071a6c4adbbb13f22571c7684b8871dc208ba8c305c5862b386c41c477a1a6c8",
+    "dockerfile": "# escape=`\nFROM docker.io/library/alpine:3.20 AS build\nRUN cat `\n  <<'EOF' > /tmp/example.Dockerfile\nFROM ${UNDECLARED}\nEOF\nFROM docker.io/library/busybox:1.36\nFROM build\n",
+    "name": "heredoc-escape-directive"
+  },
+  {
+    "build_args": {},
+    "context": {},
+    "digest": "sha256:b76c5accd05b7c0554da406006c30f3f836edd530d3d2d2274ffda5a1d557055",
+    "dockerfile": "FROM docker.io/library/alpine:3.20 AS build\nONBUILD ADD <<EOF /message\nFROM docker.io/library/busybox:1.36\nEOF\nFROM docker.io/library/busybox:1.36\nFROM build\n",
+    "name": "heredoc-onbuild-add"
+  },
+  {
+    "build_args": {},
+    "context": {},
+    "digest": "sha256:020eb3041bbe89aa92841040837e206a23c4d05f81e1ecc1f3be8758ce34f0f6",
+    "dockerfile": "FROM docker.io/library/alpine:3.20 AS build\nRUN echo \"<<EOF\"\nRUN echo \\<<EOF\nRUN [\"echo\", \"<<EOF\"]\nLABEL example=<<EOF\nFROM docker.io/library/busybox:1.36\nFROM build\nRUN <<EOF\nFROM ${UNDECLARED}\nEOF\n",
+    "name": "heredoc-literal-markers"
   }
 ]

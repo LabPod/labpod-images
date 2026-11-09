@@ -3,6 +3,7 @@
 
 import argparse
 import hashlib
+import json
 import os
 import re
 import struct
@@ -33,20 +34,126 @@ def frame(kind, key, value):
     return b"".join(struct.pack(">Q", len(field)) + field for field in fields)
 
 
+def dockerfile_raw_words(line):
+    # Keep quotes and escapes: a literal "<<EOF" is not a heredoc operand.
+    words = []
+    start = index = 0
+    quote = ""
+    while index < len(line):
+        char = line[index]
+        if char == "\\" and quote != "'" and index + 1 < len(line):
+            index += 1
+        elif quote:
+            if char == quote:
+                quote = ""
+        elif char in "'\"":
+            quote = char
+        elif char in " \t\r\n\v\f":
+            if start < index:
+                words.append(line[start:index])
+            start = index + 1
+        index += 1
+    if quote:
+        raise ValueError("unterminated quote in Dockerfile instruction")
+    if start < len(line):
+        words.append(line[start:])
+    return words
+
+
+def dockerfile_heredocs(line):
+    if "<<" not in line:
+        return []
+    words = dockerfile_raw_words(line)
+    if len(words) > 1 and words[0].upper() == "ONBUILD":
+        words = words[1:]
+    if len(words) < 2 or words[0].upper() not in {"RUN", "COPY", "ADD"}:
+        return []
+    args = words[1:]
+    while args and args[0].startswith("--"):
+        args = args[1:]
+    try:
+        json_args = json.loads(" ".join(args))
+    except ValueError:
+        pass
+    else:
+        if json_args is None or (
+            isinstance(json_args, list) and all(isinstance(arg, str) for arg in json_args)
+        ):
+            return []
+    docs = []
+    for word in args:
+        match = re.fullmatch(r"[0-9]*<<(-?)([^<]+)", word)
+        if not match:
+            continue
+        raw = match[2]
+        delimiter = ""
+        quote = ""
+        index = 0
+        # Heredoc operands use shell backslash quoting even with # escape=`.
+        while index < len(raw):
+            char = raw[index]
+            if char == "\\" and quote != "'" and index + 1 < len(raw):
+                following = raw[index + 1]
+                if quote == '"' and following not in '"$\\':
+                    delimiter += char
+                    index += 1
+                    continue
+                index += 1
+                delimiter += following
+            elif quote:
+                if char == quote:
+                    quote = ""
+                else:
+                    delimiter += char
+            elif char in "'\"":
+                quote = char
+            else:
+                delimiter += char
+            index += 1
+        docs.append((delimiter, match[1] == "-"))
+    return docs
+
+
 def logical_lines(text):
-    pending = ""
-    for raw in text.splitlines():
-        line = raw.strip()
-        if not line or (not pending and line.startswith("#")):
+    physical = iter(text.replace("\r\n", "\n").split("\n"))
+    current = ""
+    escape = "\\"
+    continued = False
+    directives = True
+    for raw in physical:
+        trimmed = raw.strip()
+        if not continued and directives:
+            key, separator, value = trimmed.removeprefix("#").strip().partition("=")
+            key, value = key.strip().lower(), value.strip()
+            if trimmed.startswith("#") and separator and key in {"escape", "syntax", "check"}:
+                if key == "escape":
+                    if value not in {"\\", "`"}:
+                        raise ValueError(f"unsupported Dockerfile escape directive: {value!r}")
+                    escape = value
+                elif key == "syntax" and not value:
+                    raise ValueError("dockerfile syntax directive missing image reference")
+                continue
+            directives = False
+        if trimmed.startswith("#") or (continued and not trimmed):
             continue
-        pending += line
-        if pending.endswith("\\"):
-            pending = pending[:-1] + " "
+        segment = raw.rstrip(" \t\r")
+        continued = segment.endswith(escape)
+        current += segment[:-1] if continued else raw
+        if continued:
             continue
-        yield pending
-        pending = ""
-    if pending:
-        yield pending
+        logical = current.strip()
+        current = ""
+        yield logical
+        for delimiter, strip_tabs in dockerfile_heredocs(logical):
+            for candidate in physical:
+                if strip_tabs:
+                    candidate = candidate.lstrip("\t")
+                if candidate == delimiter:
+                    break
+            else:
+                raise ValueError(f"unterminated Dockerfile heredoc {delimiter!r}")
+    if continued:
+        raise ValueError("dockerfile has dangling line continuation")
 
 
 def expand(value, variables):

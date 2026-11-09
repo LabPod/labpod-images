@@ -106,6 +106,12 @@ contexts reject symlinks and therefore the digest contract does too. Registry
 lookups are deliberately not part of the algorithm, so an air-gapped LabPod
 server can recompute it.
 
+Heredoc bodies are hashed as part of the exact Dockerfile bytes, but their
+contents are not instructions or external bases. If a custom recipe's digest
+previously included a `FROM` from a heredoc body, recompute its publication
+metadata with the current helper, then re-import the corrected bundle and
+prepare its workspace image again. Existing catalog digests are unchanged.
+
 [`published-images.json`](published-images.json) is the generated,
 machine-readable handoff for LabPod bundles: it records each canonical
 Dockerfile, default and per-variant build arguments, immutable references, and

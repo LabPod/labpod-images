@@ -68,6 +68,18 @@ class BuildInputDigestTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "symlink"):
                 MODULE.build_input_digest(context, context / "Dockerfile", {})
 
+    def test_malformed_heredoc_instructions_do_not_produce_a_digest(self):
+        for instruction, error in (
+            ("RUN <<-EOF\n EOF\n", "unterminated Dockerfile heredoc"),
+            ("RUN <<'EOF\n", "unterminated quote"),
+            ("RUN <<EOF \\\n", "dangling line continuation"),
+        ):
+            with self.subTest(instruction=instruction), tempfile.TemporaryDirectory() as directory:
+                context = Path(directory)
+                (context / "Dockerfile").write_text("FROM scratch\n" + instruction)
+                with self.assertRaisesRegex(ValueError, error):
+                    MODULE.build_input_digest(context, context / "Dockerfile", {})
+
     def test_cli_parses_multiline_build_args(self):
         self.assertEqual(
             MODULE.parse_build_args("B=two\nA=one\nEMPTY="),
