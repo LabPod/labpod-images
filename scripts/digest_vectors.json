@@ -171,5 +171,12 @@
     "digest": "sha256:020eb3041bbe89aa92841040837e206a23c4d05f81e1ecc1f3be8758ce34f0f6",
     "dockerfile": "FROM docker.io/library/alpine:3.20 AS build\nRUN echo \"<<EOF\"\nRUN echo \\<<EOF\nRUN [\"echo\", \"<<EOF\"]\nLABEL example=<<EOF\nFROM docker.io/library/busybox:1.36\nFROM build\nRUN <<EOF\nFROM ${UNDECLARED}\nEOF\n",
     "name": "heredoc-literal-markers"
+  },
+  {
+    "build_args": {},
+    "context": {},
+    "digest": "sha256:3f8363381f9765600e6213de6952fdd250d9d092bc723346199a29e39432c68d",
+    "dockerfile": "ARG variant=\nFROM alpine:3.20${variant}\n",
+    "name": "declared-empty-global-arg"
   }
 ]
