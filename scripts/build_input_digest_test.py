@@ -81,6 +81,12 @@ class BuildInputDigestTest(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, error):
                     MODULE.build_input_digest(context, context / "Dockerfile", {})
 
+    def test_bare_global_arg_without_override_expands_to_empty(self):
+        self.assertEqual(
+            MODULE.base_images(b"ARG variant\nFROM alpine:3.20${variant}\n", {}),
+            ["docker.io/library/alpine:3.20"],
+        )
+
     def test_cli_parses_multiline_build_args(self):
         self.assertEqual(
             MODULE.parse_build_args("B=two\nA=one\nEMPTY="),

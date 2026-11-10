@@ -163,11 +163,10 @@ def expand(value, variables):
 
         def replacement(match):
             name = match.group(1) or match.group(2)
-            resolved = variables.get(name, "")
-            if not resolved:
+            if name not in variables:
                 missing.append(name)
                 return match.group(0)
-            return resolved
+            return variables[name]
 
         following = VARIABLE.sub(replacement, current)
         if missing:
@@ -217,12 +216,9 @@ def base_images(dockerfile, build_args):
         instruction = instruction.upper()
         body = body.strip()
         if instruction == "ARG" and not saw_from:
-            name, separator, default = body.partition("=")
+            name, _, default = body.partition("=")
             name = name.strip()
-            if name in build_args:
-                variables[name] = build_args[name]
-            elif separator:
-                variables[name] = default.strip()
+            variables[name] = build_args.get(name, default.strip())
             continue
         if instruction != "FROM":
             continue
