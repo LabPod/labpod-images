@@ -87,6 +87,12 @@ class BuildInputDigestTest(unittest.TestCase):
             ["docker.io/library/alpine:3.20"],
         )
 
+    def test_tab_delimited_global_arg_expands_in_from(self):
+        self.assertEqual(
+            MODULE.base_images(b"ARG\tBASE=alpine:3.20\nFROM ${BASE}\n", {}),
+            ["docker.io/library/alpine:3.20"],
+        )
+
     def test_cli_parses_multiline_build_args(self):
         self.assertEqual(
             MODULE.parse_build_args("B=two\nA=one\nEMPTY="),

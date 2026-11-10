@@ -212,9 +212,11 @@ def base_images(dockerfile, build_args):
     bases = []
     saw_from = False
     for line in logical_lines(dockerfile.decode("utf-8")):
-        instruction, _, body = line.partition(" ")
-        instruction = instruction.upper()
-        body = body.strip()
+        fields = line.split(maxsplit=1)
+        if not fields:
+            continue
+        instruction = fields[0].upper()
+        body = fields[1].strip() if len(fields) > 1 else ""
         if instruction == "ARG" and not saw_from:
             name, _, default = body.partition("=")
             name = name.strip()

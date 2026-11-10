@@ -178,5 +178,12 @@
     "digest": "sha256:3f8363381f9765600e6213de6952fdd250d9d092bc723346199a29e39432c68d",
     "dockerfile": "ARG variant=\nFROM alpine:3.20${variant}\n",
     "name": "declared-empty-global-arg"
+  },
+  {
+    "build_args": {},
+    "context": {},
+    "digest": "sha256:cd0e7268ccf4e07b242b8ca0c64cbcf2091ccc0fbdb7b5fc99a62993178627b1",
+    "dockerfile": "FROM\talpine:3.20\n",
+    "name": "tab-delimited-from"
   }
 ]
